@@ -25,7 +25,7 @@ package amh11;
  * @author Arman D. Bilge
  *
  */
-public class ThetaTaylor {
+public final class ThetaTaylor {
     public static final double THETA[] = {
         2.22044604925031308084726333618164062500000000000000000000000000000000e-16,
         2.58095680299462431302670654660949556280513661477016285061836242675781e-08,
