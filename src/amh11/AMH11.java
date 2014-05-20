@@ -58,27 +58,22 @@ public class AMH11 {
                     .assign(Functions.mult(-mu)), Functions.plus);
         }
         
-        double tt, mv, mvd;
+        double tt;
         if (M == null) {
             tt = 1.0;
-            Object[] M_mvd_alpha_unA = selectTaylorDegree(
+            M = selectTaylorDegree(
                     A.assign(Functions.mult((double) t)),
                     b, 8, 55, shift, bal, false);
-            M = (DoubleMatrix2D) M_mvd_alpha_unA[0];
-            mv = (double) M_mvd_alpha_unA[1];
         } else {
             tt = t;
-            mv = 0;
-            mvd = 0;
         }
         
         double s = 1.0;
-        int m, mMax, p;
+        int m, mMax;
         if (t == 0) {
             m = 0;
         } else {
             mMax = M.columns();
-            p = M.rows();
             DoubleMatrix2D U = DoubleFactory2D.rowCompressed
                     .diagonal(DoubleFactory1D.dense.ascending(mMax));
             DoubleMatrix2D C = Algebra.DEFAULT.mult(Algebra.DEFAULT
@@ -103,7 +98,6 @@ public class AMH11 {
             for (int k = 1; k <= m; ++k) {
                 SmpBlas.smpBlas.dgemv(false, t/(s*k), A, b, 0, intermediate);
                 b = intermediate;
-                mv += 1;
                 f.assign(b, Functions.plus);
                 double c2 = Algebra.DEFAULT.normInfinity(b);
                 if (!fullTerm) {
@@ -139,7 +133,7 @@ public class AMH11 {
         return min;
     }
     
-    public static final Object[] selectTaylorDegree(DoubleMatrix2D A,
+    public static final DoubleMatrix2D selectTaylorDegree(DoubleMatrix2D A,
             DoubleMatrix1D b, int mMax, int pMax, boolean shift,
             boolean bal, boolean forceEstm) {
         int n = A.columns();
@@ -156,16 +150,12 @@ public class AMH11 {
         double normA = 0.0;
         if (!forceEstm)
             normA = Algebra.DEFAULT.norm1(A);
-        int unA;
         double[] alpha;
         if (!forceEstm && normA < 4 * ThetaTaylor.THETA[mMax] * pMax
                 * (pMax + 3) / (mMax * b.size())) {
-            unA = 1;
-            double c = normA;
             alpha = new double[pMax - 1];
             Arrays.fill(alpha, 1.0);
         } else {
-            unA = 0;
             double[] eta = new double[pMax - 1];
             alpha = new double[pMax - 1];
             for (int p = 0; p < pMax; ++p) {
@@ -183,22 +173,22 @@ public class AMH11 {
             for (int m = p * (p-1) - 1; m < mMax; ++m)
                 M.setQuick(m, p-1, alpha[p-1] / ThetaTaylor.THETA[m]);
         }
-        return new Object[]{M, mv, alpha, unA};
+        return M;
     }
     
     private static final double[] normAm(DoubleMatrix2D A, int m) {
-        int t = 1;
         int n = A.columns();
         double c, mv;
-        if (A.equals(A.copy().assign(Functions.abs))) {
+//        if (A.equals(A.copy().assign(Functions.abs))) {
             DoubleMatrix2D e = DoubleFactory2D.dense.make(n, 1, 1.0);
             for (int j = 0; j < m; ++j)
                 e = Algebra.DEFAULT.mult(Algebra.DEFAULT.transpose(A), e);
             c = Algebra.DEFAULT.normInfinity(e);
             mv = m;
-        } else {
-            throw new RuntimeException("Not implemented!");
-        }
+//        } else {
+//            // TODO
+//            throw new RuntimeException("Not implemented!");
+//        }
         return new double[]{c, mv};
     }
     
