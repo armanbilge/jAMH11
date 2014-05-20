@@ -24,35 +24,135 @@ package amh11;
 
 import java.util.Arrays;
 
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.MatrixUtils;
-import org.apache.commons.math3.linear.RealMatrix;
+import cern.colt.function.DoubleFunction;
+import cern.colt.matrix.DoubleFactory1D;
+import cern.colt.matrix.DoubleFactory2D;
+import cern.colt.matrix.DoubleMatrix2D;
+import cern.colt.matrix.linalg.Algebra;
+import cern.jet.math.Functions;
 
 public class AMH11 {
-
     
+    private static final double TOL = Math.pow(2, -53);
     
-    private static final Object[] selectTaylorDegree(RealMatrix A, RealMatrix b, 
-            int mMax, int pMax, double prec, boolean shift, boolean bal,
-            boolean forceEstm) {
-        int n = A.getRowDimension();
+    public static final DoubleMatrix2D expmv(int t, DoubleMatrix2D A,
+            DoubleMatrix2D b, DoubleMatrix2D M, boolean shift, boolean bal,
+            boolean fullTerm) {
+        
+        if (bal) {
+            throw new RuntimeException("Not implemented!");
+        }
+        
+        int n = A.columns();
+        double mu = 0.0;
+        if (shift) {
+            mu = Algebra.DEFAULT.trace(A) / n;
+            A.assign(DoubleFactory2D.rowCompressed.identity(n)
+                    .assign(Functions.mult(-mu)), Functions.plus);
+        }
+        
+        double tt, mv, mvd;
+        if (M == null) {
+            tt = 1.0;
+            // TODO!
+            Object[] M_mvd_alpha_unA = selectTaylorDegree(
+                    A.assign(Functions.mult((double) t)),
+                    b, Integer.MIN_VALUE, Integer.MIN_VALUE, shift, bal, false);
+            M = (DoubleMatrix2D) M_mvd_alpha_unA[0];
+            mv = (double) M_mvd_alpha_unA[1];
+        } else {
+            tt = t;
+            mv = 0;
+            mvd = 0;
+        }
+        
+        double s = 1.0;
+        int m, mMax, p;
+        if (t == 0) {
+            m = 0;
+        } else {
+            mMax = M.columns();
+            p = M.rows();
+            DoubleMatrix2D U = DoubleFactory2D.rowCompressed
+                    .diagonal(DoubleFactory1D.dense.ascending(mMax));
+            DoubleMatrix2D C = Algebra.DEFAULT.mult(Algebra.DEFAULT
+                    .transpose(M.assign(Functions.mult(Math.abs(tt)))
+                            .assign(Functions.abs)),  U);
+            C.assign(ZERO2Inf);
+            double cost;
+            int[] min = new int[2];
+            cost = getMin(C, min);
+            m = min[C.columns() > 1 ? 1 : 0];
+            if (cost == Double.POSITIVE_INFINITY)
+                cost = 0;
+            s = Math.max(cost/m, 1);
+        }
+        
+        double eta = 1;
+        if (shift) eta = Math.exp(t * mu /s);
+        DoubleMatrix2D f = b.copy();
+        for (int i = 0; i < s; ++i) {
+            double c1 = Algebra.DEFAULT.normInfinity(b);
+            for (int k = 1; k <= m; ++k) {
+                b = A.copy().assign(b, Functions.mult)
+                        .assign(Functions.mult(t / (s*k)));
+                mv += 1;
+                f.assign(b, Functions.plus);
+                double c2 = Algebra.DEFAULT.normInfinity(b);
+                if (!fullTerm) {
+                    if (c1 + c2 <= TOL * Algebra.DEFAULT.normInfinity(f))
+                        break;
+                    c1 = c2;
+                }
+            }
+            b = f.assign(Functions.mult(eta));
+        }
+        return f;
+    }
+    
+    private static final DoubleFunction ZERO2Inf = new DoubleFunction() {
+        public double apply(double d) {
+            if (d == 0) return Double.POSITIVE_INFINITY;
+            return d;
+        }
+    };
+    
+    private static final double getMin(DoubleMatrix2D M, int[] index) {
+        double min = Double.POSITIVE_INFINITY;
+        for (int i = 0; i < M.columns(); ++i) {
+            for (int j = 0; j < M.rows(); ++j) {
+                double d = M.getQuick(i, j);
+                if (d < min) {
+                    min = d;
+                    index[0] = i;
+                    index[1] = j;
+                }
+            }
+        }
+        return min;
+    }
+    
+    public static final Object[] selectTaylorDegree(DoubleMatrix2D A,
+            DoubleMatrix2D b, int mMax, int pMax, boolean shift,
+            boolean bal, boolean forceEstm) {
+        int n = A.columns();
         if (bal) {
             throw new RuntimeException("Not implemented!");
         }
         double mu;
         if (shift) {
-            mu = A.getTrace() / n;
-            A = A.add(MatrixUtils.createRealIdentityMatrix(n)
-                    .scalarMultiply(-mu));
+            mu = Algebra.DEFAULT.trace(A) / n;
+            A.assign(DoubleFactory2D.rowCompressed.identity(n)
+                    .assign(Functions.mult(-mu)), Functions.plus);
         }
         double mv = 0.0;
         double normA = 0.0;
         if (!forceEstm)
-            normA = A.getNorm();
+            normA = Algebra.DEFAULT.norm1(A);
         int unA;
         double[] alpha;
         if (!forceEstm && normA < 4 * ThetaTaylor.THETA[mMax] * pMax
-                * (pMax + 3) / (mMax * b.getColumnDimension())) {
+                * (pMax + 3) / (mMax * b.rows())) {
             unA = 1;
             double c = normA;
             alpha = new double[pMax - 1];
@@ -71,39 +171,28 @@ public class AMH11 {
                 alpha[p] = Math.max(eta[p], eta[p+1]);
             }
         }
-        RealMatrix M = new Array2DRowRealMatrix(mMax, pMax-1);
+        DoubleMatrix2D M = DoubleFactory2D.dense.make(mMax, pMax-1, 0.0);
         for (int p = 1; p < pMax; ++p) {
             for (int m = p * (p-1) - 1; m < mMax; ++m)
-                M.setEntry(m, p-1, alpha[p-1] / ThetaTaylor.THETA[m]);
+                M.setQuick(m, p-1, alpha[p-1] / ThetaTaylor.THETA[m]);
         }
         return new Object[]{M, mv, alpha, unA};
     }
     
-    private static final double[] normAm(RealMatrix A, int m) {
+    private static final double[] normAm(DoubleMatrix2D A, int m) {
         int t = 1;
-        int n = A.getRowDimension();
+        int n = A.columns();
         double c, mv;
-        if (A.equals(abs(A))) {
-            double[] ones = new double[n];
-            Arrays.fill(ones, 1.0);
-            RealMatrix e = new Array2DRowRealMatrix(ones);
+        if (A.equals(A.copy().assign(Functions.abs))) {
+            DoubleMatrix2D e = DoubleFactory2D.dense.make(n, 1, 1.0);
             for (int j = 0; j < m; ++j)
-                e = A.transpose().multiply(e);
-            c = e.getRowVector(0).getLInfNorm();
+                e = Algebra.DEFAULT.mult(Algebra.DEFAULT.transpose(A), e);
+            c = Algebra.DEFAULT.normInfinity(e);
             mv = m;
         } else {
             throw new RuntimeException("Not implemented!");
         }
         return new double[]{c, mv};
-    }
-        
-    private static final RealMatrix abs(RealMatrix A) {
-        RealMatrix B = A.copy();
-        for (int i = 0; i < B.getRowDimension(); ++i) {
-            for (int j = 0; j < B.getColumnDimension(); ++j)
-                B.setEntry(i, j, Math.abs(B.getEntry(i, j)));
-        }
-        return B;
     }
     
 }
