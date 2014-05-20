@@ -170,7 +170,7 @@ public class AMH11 {
         }
         DoubleMatrix2D M = DoubleFactory2D.dense.make(mMax, pMax-1, 0.0);
         for (int p = 1; p < pMax; ++p) {
-            for (int m = p * (p-1) - 1; m < mMax; ++m)
+            for (int m = p * (p+1) - 1; m < mMax; ++m)
                 M.setQuick(m, p-1, alpha[p-1] / ThetaTaylor.THETA[m]);
         }
         return M;
