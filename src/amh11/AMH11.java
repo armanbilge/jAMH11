@@ -154,9 +154,9 @@ public class AMH11 {
         if (!forceEstm && normA < 4 * ThetaTaylor.THETA[mMax] * pMax
                 * (pMax + 3) / (mMax * b.size())) {
             alpha = new double[pMax - 1];
-            Arrays.fill(alpha, 1.0);
+            Arrays.fill(alpha, normA);
         } else {
-            double[] eta = new double[pMax - 1];
+            double[] eta = new double[pMax];
             alpha = new double[pMax - 1];
             for (int p = 0; p < pMax; ++p) {
                 double[] ck = normAm(A, p+1);
