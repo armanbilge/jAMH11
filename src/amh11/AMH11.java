@@ -27,16 +27,23 @@ import java.util.Arrays;
 import cern.colt.function.DoubleFunction;
 import cern.colt.matrix.DoubleFactory1D;
 import cern.colt.matrix.DoubleFactory2D;
+import cern.colt.matrix.DoubleMatrix1D;
 import cern.colt.matrix.DoubleMatrix2D;
+import cern.colt.matrix.impl.DenseDoubleMatrix1D;
 import cern.colt.matrix.linalg.Algebra;
+import cern.colt.matrix.linalg.SmpBlas;
 import cern.jet.math.Functions;
 
 public class AMH11 {
     
     private static final double TOL = Math.pow(2, -53);
     
-    public static final DoubleMatrix2D expmv(int t, DoubleMatrix2D A,
-            DoubleMatrix2D b, DoubleMatrix2D M, boolean shift, boolean bal,
+    public static final DoubleMatrix1D expmv(int t, DoubleMatrix2D A, DoubleMatrix1D b) {
+        return expmv(t, A, b, null, true, false, true);
+    }
+    
+    public static final DoubleMatrix1D expmv(int t, DoubleMatrix2D A,
+            DoubleMatrix1D b, DoubleMatrix2D M, boolean shift, boolean bal,
             boolean fullTerm) {
         
         if (bal) {
@@ -90,12 +97,13 @@ public class AMH11 {
         
         double eta = 1;
         if (shift) eta = Math.exp(t * mu /s);
-        DoubleMatrix2D f = b.copy();
+        DoubleMatrix1D f = b.copy();
+        DoubleMatrix1D intermediate = new DenseDoubleMatrix1D(f.size());
         for (int i = 0; i < s; ++i) {
             double c1 = Algebra.DEFAULT.normInfinity(b);
             for (int k = 1; k <= m; ++k) {
-                b = A.copy().assign(b, Functions.mult)
-                        .assign(Functions.mult(t / (s*k)));
+                SmpBlas.smpBlas.dgemv(false, t/(s*k), A, b, 0, intermediate);
+                b = intermediate;
                 mv += 1;
                 f.assign(b, Functions.plus);
                 double c2 = Algebra.DEFAULT.normInfinity(b);
@@ -133,7 +141,7 @@ public class AMH11 {
     }
     
     public static final Object[] selectTaylorDegree(DoubleMatrix2D A,
-            DoubleMatrix2D b, int mMax, int pMax, boolean shift,
+            DoubleMatrix1D b, int mMax, int pMax, boolean shift,
             boolean bal, boolean forceEstm) {
         int n = A.columns();
         if (bal) {
@@ -152,7 +160,7 @@ public class AMH11 {
         int unA;
         double[] alpha;
         if (!forceEstm && normA < 4 * ThetaTaylor.THETA[mMax] * pMax
-                * (pMax + 3) / (mMax * b.rows())) {
+                * (pMax + 3) / (mMax * b.size())) {
             unA = 1;
             double c = normA;
             alpha = new double[pMax - 1];
