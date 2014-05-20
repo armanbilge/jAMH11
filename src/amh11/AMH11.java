@@ -61,10 +61,9 @@ public class AMH11 {
         double tt, mv, mvd;
         if (M == null) {
             tt = 1.0;
-            // TODO!
             Object[] M_mvd_alpha_unA = selectTaylorDegree(
                     A.assign(Functions.mult((double) t)),
-                    b, Integer.MIN_VALUE, Integer.MIN_VALUE, shift, bal, false);
+                    b, 8, 55, shift, bal, false);
             M = (DoubleMatrix2D) M_mvd_alpha_unA[0];
             mv = (double) M_mvd_alpha_unA[1];
         } else {
