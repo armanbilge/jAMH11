@@ -76,9 +76,10 @@ public class AMH11 {
             mMax = M.columns();
             DoubleMatrix2D U = DoubleFactory2D.rowCompressed
                     .diagonal(DoubleFactory1D.dense.ascending(mMax));
+            System.out.println(U.toString());
             DoubleMatrix2D C = Algebra.DEFAULT.mult(Algebra.DEFAULT
                     .transpose(M.assign(Functions.mult(Math.abs(tt)))
-                            .assign(Functions.abs)),  U);
+                            .assign(Functions.abs)), U);
             C.assign(ZERO2Inf);
             double cost;
             int[] min = new int[2];
@@ -92,12 +93,10 @@ public class AMH11 {
         double eta = 1;
         if (shift) eta = Math.exp(t * mu /s);
         DoubleMatrix1D f = b.copy();
-        DoubleMatrix1D intermediate = new DenseDoubleMatrix1D(f.size());
         for (int i = 0; i < s; ++i) {
             double c1 = Algebra.DEFAULT.normInfinity(b);
             for (int k = 1; k <= m; ++k) {
-                SmpBlas.smpBlas.dgemv(false, t/(s*k), A, b, 0, intermediate);
-                b = intermediate;
+                b = Algebra.DEFAULT.mult(A, b).assign(Functions.mult(t/(s*k)));
                 f.assign(b, Functions.plus);
                 double c2 = Algebra.DEFAULT.normInfinity(b);
                 if (!fullTerm) {
