@@ -31,7 +31,7 @@ import cern.colt.matrix.DoubleMatrix2D;
 import cern.colt.matrix.linalg.Algebra;
 import cern.jet.math.Functions;
 
-public class AMH11 {
+public final class AMH11 {
     
     private static final double TOL = Math.pow(2, -53);
     
