@@ -61,7 +61,7 @@ public class AMH11 {
             tt = 1.0;
             M = selectTaylorDegree(
                     A.assign(Functions.mult((double) t)),
-                    b, 8, 55, shift, bal, false);
+                    b, 55, 8, shift, bal, false);
         } else {
             tt = t;
         }
@@ -169,6 +169,7 @@ public class AMH11 {
             for (int m = p * (p+1) - 1; m < mMax; ++m)
                 M.setQuick(m, p-1, alpha[p-1] / ThetaTaylor.THETA[m]);
         }
+        System.out.println(M.toString());
         return M;
     }
     
