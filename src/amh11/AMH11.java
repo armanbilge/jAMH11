@@ -29,9 +29,7 @@ import cern.colt.matrix.DoubleFactory1D;
 import cern.colt.matrix.DoubleFactory2D;
 import cern.colt.matrix.DoubleMatrix1D;
 import cern.colt.matrix.DoubleMatrix2D;
-import cern.colt.matrix.impl.DenseDoubleMatrix1D;
 import cern.colt.matrix.linalg.Algebra;
-import cern.colt.matrix.linalg.SmpBlas;
 import cern.jet.math.Functions;
 
 public class AMH11 {
@@ -50,7 +48,7 @@ public class AMH11 {
             throw new RuntimeException("Not implemented!");
         }
         
-        int n = A.columns();
+        int n = A.rows();
         double mu = 0.0;
         if (shift) {
             mu = Algebra.DEFAULT.trace(A) / n;
@@ -73,13 +71,14 @@ public class AMH11 {
         if (t == 0) {
             m = 0;
         } else {
-            mMax = M.columns();
+            mMax = M.rows();
             DoubleMatrix2D U = DoubleFactory2D.rowCompressed
                     .diagonal(DoubleFactory1D.dense.ascending(mMax));
-            System.out.println(U.toString());
+            System.out.println(Algebra.DEFAULT
+                    .transpose(M).toString());
             DoubleMatrix2D C = Algebra.DEFAULT.mult(Algebra.DEFAULT
                     .transpose(M.assign(Functions.mult(Math.abs(tt)))
-                            .assign(Functions.abs)), U);
+                            .assign(Functions.ceil)), U);
             C.assign(ZERO2Inf);
             double cost;
             int[] min = new int[2];
@@ -119,8 +118,8 @@ public class AMH11 {
     
     private static final double getMin(DoubleMatrix2D M, int[] index) {
         double min = Double.POSITIVE_INFINITY;
-        for (int i = 0; i < M.columns(); ++i) {
-            for (int j = 0; j < M.rows(); ++j) {
+        for (int i = 0; i < M.rows(); ++i) {
+            for (int j = 0; j < M.columns(); ++j) {
                 double d = M.getQuick(i, j);
                 if (d < min) {
                     min = d;
@@ -135,7 +134,7 @@ public class AMH11 {
     public static final DoubleMatrix2D selectTaylorDegree(DoubleMatrix2D A,
             DoubleMatrix1D b, int mMax, int pMax, boolean shift,
             boolean bal, boolean forceEstm) {
-        int n = A.columns();
+        int n = A.rows();
         if (bal) {
             throw new RuntimeException("Not implemented!");
         }
