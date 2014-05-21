@@ -19,7 +19,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 package amh11;
 
 import java.util.Arrays;
@@ -36,7 +35,8 @@ public class AMH11 {
     
     private static final double TOL = Math.pow(2, -53);
     
-    public static final DoubleMatrix1D expmv(int t, DoubleMatrix2D A, DoubleMatrix1D b) {
+    public static final DoubleMatrix1D expmv(int t, DoubleMatrix2D A,
+            DoubleMatrix1D b) {
         return expmv(t, A, b, null, true, false, true);
     }
     
