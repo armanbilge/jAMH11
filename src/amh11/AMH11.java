@@ -80,14 +80,14 @@ public class AMH11 {
             double cost;
             int[] min = new int[2];
             cost = getMin(C, min);
-            m = min[C.columns() > 1 ? 1 : 0];
+            m = min[C.columns() > 1 ? 1 : 0] + 1;
             if (cost == Double.POSITIVE_INFINITY)
                 cost = 0;
             s = Math.max(cost/m, 1);
         }
         
         double eta = 1;
-        if (shift) eta = Math.exp(t * mu /s);
+        if (shift) eta = Math.exp(t * mu / s);
         DoubleMatrix1D f = b.copy();
         for (int i = 0; i < s; ++i) {
             double c1 = Algebra.DEFAULT.normInfinity(b);
