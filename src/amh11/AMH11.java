@@ -74,8 +74,6 @@ public class AMH11 {
             mMax = M.rows();
             DoubleMatrix2D U = DoubleFactory2D.rowCompressed
                     .diagonal(DoubleFactory1D.dense.ascending(mMax));
-            System.out.println(Algebra.DEFAULT
-                    .transpose(M).toString());
             DoubleMatrix2D C = Algebra.DEFAULT.mult(Algebra.DEFAULT
                     .transpose(M.assign(Functions.mult(Math.abs(tt)))
                             .assign(Functions.ceil)), U);
