@@ -40,7 +40,7 @@ public class AMH11 {
         return expmv(t, A, b, null, true, false, true);
     }
     
-    public static final DoubleMatrix1D expmv(int t, DoubleMatrix2D A,
+    public static final DoubleMatrix1D expmv(double t, DoubleMatrix2D A,
             DoubleMatrix1D b, DoubleMatrix2D M, boolean shift, boolean bal,
             boolean fullTerm) {
         
@@ -53,14 +53,13 @@ public class AMH11 {
         if (shift) {
             mu = Algebra.DEFAULT.trace(A) / n;
             A.assign(DoubleFactory2D.rowCompressed.identity(n)
-                    .assign(Functions.mult(-mu)), Functions.plus);
+                    .assign(Functions.mult(mu)), Functions.minus);
         }
-        
         double tt;
         if (M == null) {
             tt = 1.0;
             M = selectTaylorDegree(
-                    A.assign(Functions.mult((double) t)),
+                    A.copy().assign(Functions.mult(t)),
                     b, 55, 8, shift, bal, false);
         } else {
             tt = t;
@@ -165,11 +164,10 @@ public class AMH11 {
             }
         }
         DoubleMatrix2D M = DoubleFactory2D.dense.make(mMax, pMax-1, 0.0);
-        for (int p = 1; p < pMax; ++p) {
-            for (int m = p * (p+1) - 1; m < mMax; ++m)
-                M.setQuick(m, p-1, alpha[p-1] / ThetaTaylor.THETA[m]);
+        for (int p = 2; p <= pMax; ++p) {
+            for (int m = p * (p-1) - 1; m <= mMax; ++m)
+                M.setQuick(m-1, p-2, alpha[p-2] / ThetaTaylor.THETA[m-1]);
         }
-        System.out.println(M.toString());
         return M;
     }
     
