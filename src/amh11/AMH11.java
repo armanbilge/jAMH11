@@ -35,7 +35,7 @@ public final class AMH11 {
     
     private static final double TOL = Math.pow(2, -53);
     
-    public static final DoubleMatrix1D expmv(int t, DoubleMatrix2D A,
+    public static final DoubleMatrix1D expmv(double t, DoubleMatrix2D A,
             DoubleMatrix1D b) {
         return expmv(t, A, b, null, true, false, true);
     }
