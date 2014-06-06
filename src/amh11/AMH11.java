@@ -44,6 +44,9 @@ public final class AMH11 {
             DoubleMatrix1D b, DoubleMatrix2D M, boolean shift, boolean bal,
             boolean fullTerm) {
         
+        A = A.copy();
+        b = b.copy();
+        
         if (bal) {
             throw new RuntimeException("Not implemented!");
         }
