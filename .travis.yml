@@ -1,8 +1,17 @@
 language: java
 script: ant
 jdk:
-  - openjdk6
-  - openjdk7
-  - oraclejdk7
+- openjdk6
+- openjdk7
+- oraclejdk7
+env:
+  global:
+  - ARTIFACTS_S3_BUCKET=build.compevol.org
+  - secure: XLkrGa/Fa7MUyOlkZerWKtOCI3IOc3AHgP+SwYScMoJcGcvKCO9y4nlWxlnBkOIkQlMJxvagROvIfO0C7DDnT+3A2qdI3W/nmEj3AjYNPOdt4qfFzRJtEYgts7Pmmele9inaYlvGwZOuSzlgDDQac4kyj/uKipcE9pxhWrn80VU=
+  - secure: TDyJfTS+yBE3VZy45SHGNiSFyyW1ZZDjLKAjXsQ8omiZde7HrETlUZlmHr9pzCTW40gEfovsMyJf1xNmb/H/mS90buy+tMynoyCTmc8IpreT4seGYRDva1akhweQcP/cu9bH+wF8cbmQ5eaodv+D/GCPNxfUHyOLC7eDdoSc6e4=
+before_script:
+- gem install travis-artifacts
+after_success:
+- travis-artifacts upload --path build/dist/AMH11.jar
 notifications:
   email: false
