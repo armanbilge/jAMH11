@@ -1,7 +1,8 @@
 /**
  * AMH11.java
  * 
- * AMH11: Java implementation of Al-Mohy and Higham's (2011) matrix exponential
+ * AMH11: Java implementation of the matrix exponential method
+ *     described by Al-Mohy and Higham (2011)
  * 
  * Copyright (C) 2014 Arman D. Bilge <armanbilge@gmail.com>
  * 
@@ -43,7 +44,7 @@ public final class AMH11 {
     public static final DoubleMatrix1D expmv(double t, DoubleMatrix2D A,
             DoubleMatrix1D b, DoubleMatrix2D M, boolean shift, boolean bal,
             boolean fullTerm) {
-        
+                
         A = A.copy();
         b = b.copy();
         

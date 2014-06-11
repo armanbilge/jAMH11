@@ -1,7 +1,8 @@
 /**
  * ThetaTaylor.java
  * 
- * AMH11: Java implementation of Al-Mohy and Higham's (2011) matrix exponential
+ * AMH11: Java implementation of the matrix exponential method
+ *     described by Al-Mohy and Higham (2011)
  * 
  * Copyright (C) 2014 Arman D. Bilge <armanbilge@gmail.com>
  * 
