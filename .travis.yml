@@ -15,4 +15,5 @@ deploy:
   local-dir: build/dist
   upload-dir: amh11/
   on:
-    repo: armanbilge/AMH11
+  repo: armanbilge/AMH11
+  skip_cleanup: true
