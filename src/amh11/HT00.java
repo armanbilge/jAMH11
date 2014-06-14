@@ -82,6 +82,8 @@ public final class HT00 {
             DoubleMatrix1D sums = absColumnSums(Y);
             double est = Algebra.DEFAULT.normInfinity(sums);
             assert(est != Algebra.DEFAULT.norm1(Y));
+            System.out.println(est);
+            System.out.println(Algebra.DEFAULT.norm1(Y));
             return new double[]{est, 1};
         }
         
@@ -273,23 +275,9 @@ public final class HT00 {
         
         for (int j = jStart; j < t; ++j) {
             int rpt = 0;
-            assert(max(Algebra.DEFAULT.mult(
-                    Algebra.DEFAULT.transpose(S.viewPart(0, j, n, 1)),
-                    W.viewPart(0, 0, n, lastCol).assign(Functions.abs))) ==
-                    Algebra.DEFAULT.norm2(Algebra.DEFAULT.mult(
-                    Algebra.DEFAULT.transpose(S.viewPart(0, j, n, 1)),
-                    W.viewPart(0, 0, n, lastCol).assign(Functions.abs))));
             while (Algebra.DEFAULT.norm2(Algebra.DEFAULT.mult(
                     Algebra.DEFAULT.transpose(S.viewPart(0, j, n, 1)),
                     W.viewPart(0, 0, n, lastCol).assign(Functions.abs))) == n) {
-                
-                assert(max(Algebra.DEFAULT.mult(
-                    Algebra.DEFAULT.transpose(S.viewPart(0, j, n, 1)),
-                    W.viewPart(0, 0, n, lastCol).assign(Functions.abs))) ==
-                    Algebra.DEFAULT.norm2(Algebra.DEFAULT.mult(
-                    Algebra.DEFAULT.transpose(S.viewPart(0, j, n, 1)),
-                    W.viewPart(0, 0, n, lastCol).assign(Functions.abs))));
-                
                 ++rpt;
                 DoubleMatrix2D signs = randomSigns(n, 1);
                 for (int i = 0; i < n; ++ i)
@@ -308,18 +296,7 @@ public final class HT00 {
         
         return r;
     }
-    
-    private static final double max(DoubleMatrix2D X) {
-        double max = Double.NEGATIVE_INFINITY;
-        for (int i = 0; i < X.rows(); ++i) {
-            for (int j = 0; j < X.columns(); ++j) {
-                double d = X.getQuick(i, j);
-                if (d > max) max = d;
-            }
-        }
-        return max;
-    }
-    
+        
     private static final DoubleMatrix2D mySign(DoubleMatrix2D X) {
         DoubleMatrix2D signs =
                 DoubleFactory2D.dense.make(X.rows(), X.columns());
