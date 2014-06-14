@@ -182,7 +182,7 @@ public final class HT00 {
             int[] m2Tot = Arrays.copyOfRange(m2, 0, t);
             if (it == 1) {
                 ind = DoubleFactory1D.dense.make(t);
-                for (int i = 0; i < t; ++i) ind.setQuick(i++, m2Tot[i]);
+                for (int i = 0; i < t; ++i) ind.setQuick(i, m2Tot[i]);
                 indHist = ind;
             } else {
                 int rep = memberCount(m2Tot, indHist);
@@ -324,7 +324,7 @@ public final class HT00 {
         DoubleMatrix2D signs =
                 DoubleFactory2D.dense.make(X.rows(), X.columns());
         for (int i = 0; i < X.rows(); ++i) {
-            for (int j = 0; i < X.columns(); ++j) {
+            for (int j = 0; j < X.columns(); ++j) {
                 double sign = Math.signum(X.getQuick(i, j));
                 if (sign == 0) sign = 1.0;
                 signs.setQuick(i, j, sign);
