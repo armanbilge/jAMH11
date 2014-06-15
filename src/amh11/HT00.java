@@ -149,7 +149,7 @@ public final class HT00 {
                 break;
             }
             
-            S_old = S.copy();
+            S_old = S;
             S = mySign(Y);
             
             if (isReal) {
