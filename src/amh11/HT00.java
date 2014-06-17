@@ -80,9 +80,6 @@ public final class HT00 {
             
             DoubleMatrix1D sums = absColumnSums(Y);
             double est = Algebra.DEFAULT.normInfinity(sums);
-            assert(est != Algebra.DEFAULT.norm1(Y));
-            System.out.println(est);
-            System.out.println(Algebra.DEFAULT.norm1(Y));
             return new double[]{est, 1};
         }
         
