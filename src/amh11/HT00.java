@@ -64,8 +64,7 @@ public final class HT00 {
         public boolean isReal();
     }
     
-    public static final double[] normest1(DoubleMatrix2DFunction f,
-            int t) {
+    public static final double[] normest1(DoubleMatrix2DFunction f, int t) {
         
         int n = f.getDimensions();
         boolean isReal = f.isReal();
@@ -130,12 +129,8 @@ public final class HT00 {
             est = vals.getQuick(0);
             
             int est_j = Integer.MIN_VALUE;
-            DoubleMatrix1D w;
             if (est > estOld || (it == 2)) {
                 est_j = (int) vals_ind.getQuick(0);
-                w = DoubleFactory1D.dense.make(Y.rows());
-                for (int i = 0; i < w.size(); ++i)
-                    w.setQuick(i, m2[0]);
             }
             
             if (it >= 2 && est <= estOld) {
@@ -277,7 +272,7 @@ public final class HT00 {
             int rpt = 0;
             while (Algebra.DEFAULT.norm2(Algebra.DEFAULT.mult(
                     Algebra.DEFAULT.transpose(S.viewPart(0, j, n, 1)),
-                    W.viewPart(0, 0, n, lastCol).assign(Functions.abs))) == n) {
+                    W.viewPart(0, 0, n, lastCol)).assign(Functions.abs)) == n) {
                 ++rpt;
                 DoubleMatrix2D signs = randomSigns(n, 1);
                 for (int i = 0; i < n; ++ i)
