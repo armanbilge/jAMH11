@@ -11,4 +11,4 @@ without explicitly forming the matrix exponential.
 
 This implementation is derived from their original
 [MATLAB codes](http://www.mathworks.com/matlabcentral/fileexchange/29576-matrix-exponential-times-a-vector)
-and uses the [Colt libraries](http://en.wikipedia.org/wiki/Colt_(libraries)).
+and uses the [MTJ library](https://github.com/fommil/matrix-toolkits-java).

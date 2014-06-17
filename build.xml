@@ -6,19 +6,24 @@
     <property name="src" location="src" />
     <property name="build" location="build" />
     <property name="lib" location="lib" />
-    <property name="dist" location="build/dist" />
+    <property name="build-lib" location="build-lib" />
+    <property name="dist" location="dist" />
     <property name="test" location="test" />
 
     <path id="classpath">
-        <fileset dir="${lib}" includes="colt.jar"/>
+        <fileset dir="${build-lib}" includes="mtj.jar"/>
      </path>
 
     <target name="init">
         <echo message="${ant.project.name}: ${ant.file}" />
+        <mkdir dir="${build-lib}" />
+        <get src="https://oss.sonatype.org/content/repositories/snapshots/com/googlecode/matrix-toolkits-java/mtj/1.0.2-SNAPSHOT/mtj-1.0.2-20140415.210429-3.jar"
+	         dest="${build-lib}/mtj.jar" />
     </target>
 
     <target name="clean">
         <delete dir="${build}" />
+        <delete dir="${build-lib}" />
         <delete dir="${test}" />
     </target>
 
@@ -54,7 +59,7 @@
                 <include name="amh11/*.class" />
                 <include name="amh11/*.properties" />
             </fileset>
-            <zipgroupfileset dir="${lib}" includes="colt.jar" />
+            <zipgroupfileset dir="${build-lib}" includes="mtj.jar" />
         </jar>
     </target>
 
