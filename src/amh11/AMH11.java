@@ -24,26 +24,29 @@ package amh11;
 
 import java.util.Arrays;
 
-import amh11.HT00.DoubleMatrix2DFunction;
-import cern.colt.function.DoubleFunction;
-import cern.colt.matrix.DoubleFactory1D;
-import cern.colt.matrix.DoubleFactory2D;
-import cern.colt.matrix.DoubleMatrix1D;
-import cern.colt.matrix.DoubleMatrix2D;
-import cern.colt.matrix.linalg.Algebra;
-import cern.jet.math.Functions;
+import no.uib.cipr.matrix.DenseMatrix;
+import no.uib.cipr.matrix.Matrices;
+import no.uib.cipr.matrix.Matrix;
+import no.uib.cipr.matrix.Vector;
+import amh11.HT00.MatrixFunction;
 
+/**
+ * @author Arman D. Bilge <armanbilge@gmail.com>
+ *
+ */
 public final class AMH11 {
+    
+    private AMH11() {}
     
     private static final double TOL = Math.pow(2, -53);
     
-    public static final DoubleMatrix1D expmv(double t, DoubleMatrix2D A,
-            DoubleMatrix1D b) {
+    public static final Vector expmv(double t, Matrix A,
+            Vector b) {
         return expmv(t, A, b, null, true, false, true);
     }
     
-    public static final DoubleMatrix1D expmv(double t, DoubleMatrix2D A,
-            DoubleMatrix1D b, DoubleMatrix2D M, boolean shift, boolean bal,
+    public static final Vector expmv(double t, Matrix A,
+            Vector b, Matrix M, boolean shift, boolean bal,
             boolean fullTerm) {
                 
         A = A.copy();
@@ -53,19 +56,17 @@ public final class AMH11 {
             throw new RuntimeException("Not implemented!");
         }
         
-        int n = A.rows();
+        int n = A.numRows();
         double mu = 0.0;
         if (shift) {
-            mu = Algebra.DEFAULT.trace(A) / n;
-            A.assign(DoubleFactory2D.rowCompressed.identity(n)
-                    .assign(Functions.mult(mu)), Functions.minus);
+            mu = Utils.trace(M) / n;
+            A.add(-1, Matrices.identity(n).scale(mu));
         }
         double tt;
         if (M == null) {
             tt = 1.0;
             M = selectTaylorDegree(
-                    A.copy().assign(Functions.mult(t)),
-                    b, 55, 8, shift, bal, false);
+                    A.copy().scale(t), b, 55, 8, shift, bal, false);
         } else {
             tt = t;
         }
@@ -75,17 +76,17 @@ public final class AMH11 {
         if (t == 0) {
             m = 0;
         } else {
-            mMax = M.rows();
-            DoubleMatrix2D U = DoubleFactory2D.rowCompressed
+            mMax = M.numRows();
+            Matrix U = DoubleFactory2D.rowCompressed
                     .diagonal(DoubleFactory1D.dense.ascending(mMax));
-            DoubleMatrix2D C = Algebra.DEFAULT.mult(Algebra.DEFAULT
+            Matrix C = Algebra.DEFAULT.mult(Algebra.DEFAULT
                     .transpose(M.assign(Functions.mult(Math.abs(tt)))
                             .assign(Functions.ceil)), U);
             C.assign(ZERO2Inf);
             double cost;
             int[] min = new int[2];
             cost = getMin(C, min);
-            m = min[C.columns() > 1 ? 1 : 0] + 1;
+            m = min[C.numColumns() > 1 ? 1 : 0] + 1;
             if (cost == Double.POSITIVE_INFINITY)
                 cost = 0;
             s = Math.max(cost/m, 1);
@@ -93,7 +94,7 @@ public final class AMH11 {
         
         double eta = 1;
         if (shift) eta = Math.exp(t * mu / s);
-        DoubleMatrix1D f = b.copy();
+        Vector f = b.copy();
         for (int i = 0; i < s; ++i) {
             double c1 = Algebra.DEFAULT.normInfinity(b);
             for (int k = 1; k <= m; ++k) {
@@ -118,11 +119,11 @@ public final class AMH11 {
         }
     };
     
-    private static final double getMin(DoubleMatrix2D M, int[] index) {
+    private static final double getMin(Matrix M, int[] index) {
         double min = Double.POSITIVE_INFINITY;
-        for (int i = 0; i < M.rows(); ++i) {
-            for (int j = 0; j < M.columns(); ++j) {
-                double d = M.getQuick(i, j);
+        for (int i = 0; i < M.numRows(); ++i) {
+            for (int j = 0; j < M.numColumns(); ++j) {
+                double d = M.get(i, j);
                 if (d < min) {
                     min = d;
                     index[0] = i;
@@ -133,10 +134,10 @@ public final class AMH11 {
         return min;
     }
     
-    public static final DoubleMatrix2D selectTaylorDegree(DoubleMatrix2D A,
-            DoubleMatrix1D b, int mMax, int pMax, boolean shift,
+    public static final Matrix selectTaylorDegree(Matrix A,
+            Vector b, int mMax, int pMax, boolean shift,
             boolean bal, boolean forceEstm) {
-        int n = A.rows();
+        int n = A.numRows();
         if (bal) {
             throw new RuntimeException("Not implemented!");
         }
@@ -168,29 +169,29 @@ public final class AMH11 {
                 alpha[p] = Math.max(eta[p], eta[p+1]);
             }
         }
-        DoubleMatrix2D M = DoubleFactory2D.dense.make(mMax, pMax-1, 0.0);
+        Matrix M = new DenseMatrix(mMax, pMax-1);
         for (int p = 2; p <= pMax; ++p) {
             for (int m = p * (p-1) - 1; m <= mMax; ++m)
-                M.setQuick(m-1, p-2, alpha[p-2] / ThetaTaylor.THETA[m-1]);
+                M.set(m-1, p-2, alpha[p-2] / ThetaTaylor.THETA[m-1]);
         }
         return M;
     }
     
-    private static final double[] normAm(final DoubleMatrix2D A, final int m) {
+    private static final double[] normAm(final Matrix A, final int m) {
         int t = 1;
-        final int n = A.columns();
+        final int n = A.numColumns();
         double c, mv;
         if (A.equals(A.copy().assign(Functions.abs))) {
-            DoubleMatrix2D e = DoubleFactory2D.dense.make(n, 1, 1.0);
+            Matrix e = DoubleFactory2D.dense.make(n, 1, 1.0);
             for (int j = 0; j < m; ++j)
                 e = Algebra.DEFAULT.mult(Algebra.DEFAULT.transpose(A), e);
             c = Algebra.DEFAULT.normInfinity(e);
             mv = m;
         } else {
             
-            DoubleMatrix2DFunction afunPower =
-                    new DoubleMatrix2DFunction() {
-                        public DoubleMatrix2D apply(DoubleMatrix2D X,
+            MatrixFunction afunPower =
+                    new MatrixFunction() {
+                        public Matrix apply(Matrix X,
                                 boolean transpose) {
                             
                             if (!transpose) {
@@ -198,7 +199,7 @@ public final class AMH11 {
                                     X = Algebra.DEFAULT.mult(A, X);
                                 }
                             } else {
-                                DoubleMatrix2D AT =
+                                Matrix AT =
                                         Algebra.DEFAULT.transpose(A);
                                 for (int i = 0; i < m; ++i) {
                                     X = Algebra.DEFAULT.mult(AT, X);
