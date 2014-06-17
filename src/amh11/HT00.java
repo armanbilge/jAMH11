@@ -157,7 +157,7 @@ public final class HT00 {
                         .mult(Algebra.DEFAULT.transpose(S_old), S);
                 double np = columnsMax(SS).zSum();
                 if (np == t) break;
-//                double r = unduplicate(S, S_old);
+                /* double r = */ unduplicate(S, S_old);
 //                rpt_S += r;
             }
             
@@ -214,7 +214,7 @@ public final class HT00 {
                     temp.setQuick(t+i, ind.getQuick(i));
                 indHist = temp;
             }
-            X = DoubleFactory2D.rowCompressed.make(n, t);
+            X = DoubleFactory2D.dense.make(n, t);
             for (int j = 0; j < imax; ++j)
                 X.setQuick((int) ind.getQuick(j), j, 1);
         }
