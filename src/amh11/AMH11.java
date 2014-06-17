@@ -160,7 +160,7 @@ public final class AMH11 {
             alpha = new double[pMax - 1];
             for (int p = 0; p < pMax; ++p) {
                 double[] ck = normAm(A, p+2);
-                double c = Math.pow(ck[0], 1/(p+2));
+                double c = Math.pow(ck[0], 1.0/(p+2));
                 mv = mv + ck[1];
                 eta[p] = c;
             }
