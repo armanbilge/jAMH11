@@ -6,19 +6,23 @@
     <property name="src" location="src" />
     <property name="build" location="build" />
     <property name="lib" location="lib" />
+    <property name="build-lib" location="build-lib" />
     <property name="dist" location="dist" />
     <property name="test" location="test" />
 
     <path id="classpath">
-        <fileset dir="${lib}" includes="colt.jar"/>
+        <fileset dir="${build-lib}" includes="jblas.jar"/>
      </path>
 
     <target name="init">
         <echo message="${ant.project.name}: ${ant.file}" />
+        <get src="http://mikiobraun.github.io/jblas/jars/jblas-1.2.3.jar"
+	         dest="${build-lib}/jblas.jar" />
     </target>
 
     <target name="clean">
         <delete dir="${build}" />
+        <delete dir="${build-lib}" />
         <delete dir="${test}" />
     </target>
 
@@ -54,7 +58,7 @@
                 <include name="amh11/*.class" />
                 <include name="amh11/*.properties" />
             </fileset>
-            <zipgroupfileset dir="${lib}" includes="colt.jar" />
+            <zipgroupfileset dir="${build-lib}" includes="jblas.jar" />
         </jar>
     </target>
 
