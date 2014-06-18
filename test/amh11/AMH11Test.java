@@ -72,8 +72,10 @@ public class AMH11Test {
         
     }
     
+    @SuppressWarnings("unused")
     private static double EPSILON = 2.220446049250313E-16;
     private static double SQRT_EPSILON = 1.4901161193847656E-8;
+    @SuppressWarnings("unused")
     private static double SQRT_SQRT_EPSILON = 1.220703125E-4;
     private static boolean same(double a, double b) {
         return Math.abs((a/b)-1.0) <= SQRT_EPSILON;
