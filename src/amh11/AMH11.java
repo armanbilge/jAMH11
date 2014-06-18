@@ -101,8 +101,8 @@ public final class AMH11 {
         for (int i = 0; i < s; ++i) {
             double c1 = b.norm(Vector.Norm.Infinity);
             for (int k = 1; k <= m; ++k) {
-                b = A.mult(b, new DenseVector(b.size()));
-                f.add(t/(s*k), b);
+                b = A.mult(b, new DenseVector(b.size())).scale(t/(s*k));
+                f.add(b);
                 double c2 = b.norm(Vector.Norm.Infinity);
                 if (!fullTerm) {
                     if (c1 + c2 <= TOL * f.norm(Vector.Norm.Infinity))
