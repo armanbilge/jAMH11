@@ -24,30 +24,43 @@ package amh11;
 
 import static org.junit.Assert.assertTrue;
 
+import java.lang.reflect.Field;
 import java.util.Random;
 
+import no.uib.cipr.matrix.DenseMatrix;
 import no.uib.cipr.matrix.Matrices;
 import no.uib.cipr.matrix.Matrix;
 import no.uib.cipr.matrix.Vector;
 
 import org.jblas.DoubleMatrix;
 import org.jblas.MatrixFunctions;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class AMH11Test {
-
-    private final Random random = new Random(123);
     
     public AMH11Test() {}
 
+    @BeforeClass
+    public static void setup() throws Exception {
+        Field field = Math.class.getDeclaredField("randomNumberGenerator");
+        field.setAccessible(true);
+        field.set(null, new Random(123));
+    }
+    
     @Test
     public void test() {
+                
+        int size = 16;
+        Matrix O = new DenseMatrix(size, size);
+        for (int i = 0; i < size; ++i) {
+            for (int j = 0; j < size; ++j) O.set(j, i, 1.0);
+        }
         
-        for (int i = 0; i < 1000; ++i) {
-            int size = 16;
-            Matrix M = Matrices.random(size, size);
+        for (int i = 0; i < 256; ++i) {
+            Matrix M = Matrices.random(size, size).scale(2).add(-1, O);
             Vector v = Matrices.random(size);
-            double t = random.nextDouble();
+            double t = Math.random();
             Vector amh11 = AMH11.expmv(t, M, v);
             DoubleMatrix jblas = MatrixFunctions.expm(
                     new DoubleMatrix(Matrices.getArray(M)).muli(t)).mmul(
