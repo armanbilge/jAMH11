@@ -24,7 +24,6 @@ package amh11;
 
 import static org.junit.Assert.assertTrue;
 
-import java.util.Arrays;
 import java.util.Random;
 
 import no.uib.cipr.matrix.Matrices;
@@ -39,8 +38,7 @@ public class AMH11Test {
 
     private final Random random = new Random();
     
-    public AMH11Test() {
-    }
+    public AMH11Test() {}
 
     @Test
     public void test() {
@@ -52,15 +50,10 @@ public class AMH11Test {
         
         Vector amh11 = AMH11.expmv(t, M, v);
 
-        DoubleMatrix jblas = MatrixFunctions.expm(new DoubleMatrix(Matrices.getArray(M))
-                .muli(t)).mmul(new DoubleMatrix(Matrices.getArray(v)));
+        DoubleMatrix jblas = MatrixFunctions.expm(
+                new DoubleMatrix(Matrices.getArray(M)).muli(t))
+                .mmul(new DoubleMatrix(Matrices.getArray(v)));
         
-        System.out.println(Arrays.deepToString(Matrices.getArray(M)));
-        System.out.println(Arrays.toString(Matrices.getArray(v)));
-        System.out.println(t);
-        
-        System.out.println(Arrays.toString(Matrices.getArray(amh11)));
-        System.out.println(Arrays.toString(jblas.toArray()));
         for (int i = 0; i < amh11.size(); ++i) {
             assertTrue(same(amh11.get(i), jblas.get(i)));
         }
@@ -70,7 +63,7 @@ public class AMH11Test {
     private static double SQRT_EPSILON = 1.4901161193847656E-8;
     private static double SQRT_SQRT_EPSILON = 1.220703125E-4;
     private static boolean same(double a, double b) {
-        return Math.abs((a/b)-1.0) <= SQRT_SQRT_EPSILON;
+        return Math.abs((a/b)-1.0) <= SQRT_EPSILON;
     }
     
 }
