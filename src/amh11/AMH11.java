@@ -24,14 +24,9 @@ package amh11;
 
 import java.util.Arrays;
 
-import amh11.HT00.DoubleMatrix2DFunction;
-import cern.colt.function.DoubleFunction;
-import cern.colt.matrix.DoubleFactory1D;
-import cern.colt.matrix.DoubleFactory2D;
-import cern.colt.matrix.DoubleMatrix1D;
-import cern.colt.matrix.DoubleMatrix2D;
-import cern.colt.matrix.linalg.Algebra;
-import cern.jet.math.Functions;
+import org.jblas.DoubleMatrix;
+
+import amh11.HT00.DoubleMatrixFunction;
 
 /**
  * @author Arman D. Bilge <armanbilge@gmail.com>
@@ -43,35 +38,32 @@ public final class AMH11 {
     
     private AMH11() {}
     
-    public static final DoubleMatrix1D expmv(double t, DoubleMatrix2D A,
-            DoubleMatrix1D b) {
+    public static final DoubleMatrix expmv(double t, DoubleMatrix A,
+            DoubleMatrix b) {
         return expmv(t, A, b, null, true, false, true);
     }
     
-    public static final DoubleMatrix1D expmv(double t, DoubleMatrix2D A,
-            DoubleMatrix1D b, DoubleMatrix2D M, boolean shift, boolean bal,
+    public static final DoubleMatrix expmv(double t, DoubleMatrix A,
+            DoubleMatrix b, DoubleMatrix M, boolean shift, boolean bal,
             boolean fullTerm) {
                 
-        A = A.copy();
-        b = b.copy();
+        A = A.dup();
+        b = b.dup();
         
         if (bal) {
             throw new RuntimeException("Not implemented!");
         }
         
-        int n = A.rows();
+        int n = A.getRows();
         double mu = 0.0;
         if (shift) {
-            mu = Algebra.DEFAULT.trace(A) / n;
-            A.assign(DoubleFactory2D.rowCompressed.identity(n)
-                    .assign(Functions.mult(mu)), Functions.minus);
+            mu = Utils.trace(A) / n;
+            A.mini(DoubleMatrix.eye(n).muli(mu));
         }
         double tt;
         if (M == null) {
             tt = 1.0;
-            M = selectTaylorDegree(
-                    A.copy().assign(Functions.mult(t)),
-                    b, 55, 8, shift, bal, false);
+            M = selectTaylorDegree(A.mul(t), b, 55, 8, shift, bal, false);
         } else {
             tt = t;
         }
@@ -81,17 +73,15 @@ public final class AMH11 {
         if (t == 0) {
             m = 0;
         } else {
-            mMax = M.rows();
-            DoubleMatrix2D U = DoubleFactory2D.rowCompressed
-                    .diagonal(DoubleFactory1D.dense.ascending(mMax));
-            DoubleMatrix2D C = Algebra.DEFAULT.mult(Algebra.DEFAULT
-                    .transpose(M.assign(Functions.mult(Math.abs(tt)))
-                            .assign(Functions.ceil)), U);
-            C.assign(ZERO2Inf);
+            mMax = M.getRows();
+            DoubleMatrix U = Utils.ascendingMatrix(mMax);
+            DoubleMatrix C =
+                    Utils.ceil(M.muli(Math.abs(tt))).transpose().mmuli(U);
+            Utils.Zero2Inf(C);
             double cost;
             int[] min = new int[2];
             cost = getMin(C, min);
-            m = min[C.columns() > 1 ? 1 : 0] + 1;
+            m = min[C.getColumns() > 1 ? 1 : 0] + 1;
             if (cost == Double.POSITIVE_INFINITY)
                 cost = 0;
             s = Math.max(cost/m, 1);
@@ -99,36 +89,28 @@ public final class AMH11 {
         
         double eta = 1;
         if (shift) eta = Math.exp(t * mu / s);
-        DoubleMatrix1D f = b.copy();
+        DoubleMatrix f = b.dup();
         for (int i = 0; i < s; ++i) {
-            double c1 = Algebra.DEFAULT.normInfinity(b);
+            double c1 = b.normmax();
             for (int k = 1; k <= m; ++k) {
-                b = Algebra.DEFAULT.mult(A, b).assign(Functions.mult(t/(s*k)));
-                f.assign(b, Functions.plus);
-                double c2 = Algebra.DEFAULT.normInfinity(b);
+                b = A.mmul(b).mul(t/(s*k));
+                f.addi(b);
+                double c2 = b.normmax();
                 if (!fullTerm) {
-                    if (c1 + c2 <= TOL * Algebra.DEFAULT.normInfinity(f))
-                        break;
+                    if (c1 + c2 <= TOL * f.normmax()) break;
                     c1 = c2;
                 }
             }
-            b = f.assign(Functions.mult(eta));
+            b = f.muli(eta);
         }
         return f;
     }
-    
-    private static final DoubleFunction ZERO2Inf = new DoubleFunction() {
-        public double apply(double d) {
-            if (d == 0) return Double.POSITIVE_INFINITY;
-            return d;
-        }
-    };
-    
-    private static final double getMin(DoubleMatrix2D M, int[] index) {
+        
+    private static final double getMin(DoubleMatrix M, int[] index) {
         double min = Double.POSITIVE_INFINITY;
-        for (int i = 0; i < M.rows(); ++i) {
-            for (int j = 0; j < M.columns(); ++j) {
-                double d = M.getQuick(i, j);
+        for (int i = 0; i < M.getRows(); ++i) {
+            for (int j = 0; j < M.getColumns(); ++j) {
+                double d = M.get(i, j);
                 if (d < min) {
                     min = d;
                     index[0] = i;
@@ -139,18 +121,17 @@ public final class AMH11 {
         return min;
     }
     
-    public static final DoubleMatrix2D selectTaylorDegree(DoubleMatrix2D A,
-            DoubleMatrix1D b, int mMax, int pMax, boolean shift,
+    public static final DoubleMatrix selectTaylorDegree(DoubleMatrix A,
+            DoubleMatrix b, int mMax, int pMax, boolean shift,
             boolean bal, boolean forceEstm) {
-        int n = A.rows();
+        int n = A.getRows();
         if (bal) {
             throw new RuntimeException("Not implemented!");
         }
         double mu;
         if (shift) {
-            mu = Algebra.DEFAULT.trace(A) / n;
-            A.assign(DoubleFactory2D.rowCompressed.identity(n)
-                    .assign(Functions.mult(-mu)), Functions.plus);
+            mu = Utils.trace(A) / n;
+            A.addi(DoubleMatrix.eye(n).muli(-mu));
         }
         double mv = 0.0;
         double normA = 0.0;
@@ -174,29 +155,29 @@ public final class AMH11 {
                 alpha[p] = Math.max(eta[p], eta[p+1]);
             }
         }
-        DoubleMatrix2D M = DoubleFactory2D.dense.make(mMax, pMax-1, 0.0);
+        DoubleMatrix M = DoubleMatrix.zeros(mMax, pMax-1);
         for (int p = 2; p <= pMax; ++p) {
             for (int m = p * (p-1) - 1; m <= mMax; ++m)
-                M.setQuick(m-1, p-2, alpha[p-2] / ThetaTaylor.THETA[m-1]);
+                M.put(m-1, p-2, alpha[p-2] / ThetaTaylor.THETA[m-1]);
         }
         return M;
     }
     
-    private static final double[] normAm(final DoubleMatrix2D A, final int m) {
+    private static final double[] normAm(final DoubleMatrix A, final int m) {
         int t = 1;
-        final int n = A.columns();
+        final int n = A.getColumns();
         double c, mv;
         if (A.equals(A.copy().assign(Functions.abs))) {
-            DoubleMatrix2D e = DoubleFactory2D.dense.make(n, 1, 1.0);
+            DoubleMatrix e = DoubleFactory2D.dense.make(n, 1, 1.0);
             for (int j = 0; j < m; ++j)
                 e = Algebra.DEFAULT.mult(Algebra.DEFAULT.transpose(A), e);
             c = Algebra.DEFAULT.normInfinity(e);
             mv = m;
         } else {
             
-            DoubleMatrix2DFunction afunPower =
-                    new DoubleMatrix2DFunction() {
-                        public DoubleMatrix2D apply(DoubleMatrix2D X,
+            DoubleMatrixFunction afunPower =
+                    new DoubleMatrixFunction() {
+                        public DoubleMatrix apply(DoubleMatrix X,
                                 boolean transpose) {
                             
                             if (!transpose) {
@@ -204,7 +185,7 @@ public final class AMH11 {
                                     X = Algebra.DEFAULT.mult(A, X);
                                 }
                             } else {
-                                DoubleMatrix2D AT =
+                                DoubleMatrix AT =
                                         Algebra.DEFAULT.transpose(A);
                                 for (int i = 0; i < m; ++i) {
                                     X = Algebra.DEFAULT.mult(AT, X);
