@@ -1,11 +1,13 @@
 language: java
-script: ant
 jdk:
 - openjdk6
 - openjdk7
 - oraclejdk7
 notifications:
   email: false
+after_script:
+- ant clean
+- ant
 deploy:
   provider: s3
   access_key_id: AKIAJ4HSUQVUNZNKFJDQ

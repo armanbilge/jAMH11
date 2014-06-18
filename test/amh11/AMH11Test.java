@@ -24,53 +24,59 @@ package amh11;
 
 import static org.junit.Assert.assertTrue;
 
-import java.util.Arrays;
+import java.lang.reflect.Field;
 import java.util.Random;
+
+import no.uib.cipr.matrix.DenseMatrix;
+import no.uib.cipr.matrix.Matrices;
+import no.uib.cipr.matrix.Matrix;
+import no.uib.cipr.matrix.Vector;
 
 import org.jblas.DoubleMatrix;
 import org.jblas.MatrixFunctions;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
-import cern.colt.matrix.DoubleFactory1D;
-import cern.colt.matrix.DoubleFactory2D;
-import cern.colt.matrix.DoubleMatrix1D;
-import cern.colt.matrix.DoubleMatrix2D;
-
 public class AMH11Test {
-
-    private final Random random = new Random();
     
-    public AMH11Test() {
-    }
+    public AMH11Test() {}
 
+    @BeforeClass
+    public static void setup() throws Exception {
+        Field field = Math.class.getDeclaredField("randomNumberGenerator");
+        field.setAccessible(true);
+        field.set(null, new Random(123));
+    }
+    
     @Test
     public void test() {
-        
-        int size = 32;
-        DoubleMatrix2D M = DoubleFactory2D.dense.random(size, size);
-        DoubleMatrix1D v = DoubleFactory1D.dense.random(size);
-        double t = random.nextDouble();
-        
-        DoubleMatrix1D amh11 = AMH11.expmv(t, M, v);
-        DoubleMatrix jblas = MatrixFunctions.expm(new DoubleMatrix(M.toArray())
-                .muli(t)).mmul(new DoubleMatrix(v.toArray()));
-        
-        System.out.println(Arrays.deepToString(M.toArray()));
-        System.out.println(Arrays.toString(v.toArray()));
-        System.out.println(t);
-        
-        System.out.println(Arrays.toString(amh11.toArray()));
-        System.out.println(Arrays.toString(jblas.toArray()));
-        for (int i = 0; i < amh11.size(); ++i) {
-            assertTrue(same(amh11.getQuick(i), jblas.get(i)));
+                
+        int size = 16;
+        Matrix O = new DenseMatrix(size, size);
+        for (int i = 0; i < size; ++i) {
+            for (int j = 0; j < size; ++j) O.set(j, i, 1.0);
         }
+        
+        for (int i = 0; i < 256; ++i) {
+            Matrix M = Matrices.random(size, size).scale(2).add(-1, O);
+            Vector v = Matrices.random(size);
+            double t = Math.random();
+            Vector amh11 = AMH11.expmv(t, M, v);
+            DoubleMatrix jblas = MatrixFunctions.expm(
+                    new DoubleMatrix(Matrices.getArray(M)).muli(t)).mmul(
+                    new DoubleMatrix(Matrices.getArray(v)));
+            for (int j = 0; j < amh11.size(); ++j) {
+                assertTrue(same(amh11.get(j), jblas.get(j)));
+            }
+        }
+        
     }
     
     private static double EPSILON = 2.220446049250313E-16;
     private static double SQRT_EPSILON = 1.4901161193847656E-8;
     private static double SQRT_SQRT_EPSILON = 1.220703125E-4;
     private static boolean same(double a, double b) {
-        return Math.abs((a/b)-1.0) <= SQRT_SQRT_EPSILON;
+        return Math.abs((a/b)-1.0) <= SQRT_EPSILON;
     }
     
 }
