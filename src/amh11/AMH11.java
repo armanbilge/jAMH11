@@ -25,6 +25,7 @@ package amh11;
 import java.util.Arrays;
 
 import no.uib.cipr.matrix.DenseMatrix;
+import no.uib.cipr.matrix.DenseVector;
 import no.uib.cipr.matrix.Matrices;
 import no.uib.cipr.matrix.Matrix;
 import no.uib.cipr.matrix.Vector;
@@ -77,12 +78,14 @@ public final class AMH11 {
             m = 0;
         } else {
             mMax = M.numRows();
-            Matrix U = DoubleFactory2D.rowCompressed
-                    .diagonal(DoubleFactory1D.dense.ascending(mMax));
-            Matrix C = Algebra.DEFAULT.mult(Algebra.DEFAULT
-                    .transpose(M.assign(Functions.mult(Math.abs(tt)))
-                            .assign(Functions.ceil)), U);
-            C.assign(ZERO2Inf);
+            Matrix U = Utils.ascendingDiagonal(mMax);
+//            Matrix C = Algebra.DEFAULT.mult(Algebra.DEFAULT
+//                    .transpose(M.assign(Functions.mult(Math.abs(tt)))
+//                            .assign(Functions.ceil)), U);
+            Matrix C = Utils.ceil(M.scale(Math.abs(tt)))
+                    .transAmult(U, new DenseMatrix(M.numColumns(),
+                            U.numColumns()));
+            Utils.Zero2Inf(C);
             double cost;
             int[] min = new int[2];
             cost = getMin(C, min);
@@ -96,29 +99,22 @@ public final class AMH11 {
         if (shift) eta = Math.exp(t * mu / s);
         Vector f = b.copy();
         for (int i = 0; i < s; ++i) {
-            double c1 = Algebra.DEFAULT.normInfinity(b);
+            double c1 = b.norm(Vector.Norm.Infinity);
             for (int k = 1; k <= m; ++k) {
-                b = Algebra.DEFAULT.mult(A, b).assign(Functions.mult(t/(s*k)));
-                f.assign(b, Functions.plus);
-                double c2 = Algebra.DEFAULT.normInfinity(b);
+                b = A.mult(b, new DenseVector(b.size()));
+                f.add(t/(s*k), b);
+                double c2 = b.norm(Vector.Norm.Infinity);
                 if (!fullTerm) {
-                    if (c1 + c2 <= TOL * Algebra.DEFAULT.normInfinity(f))
+                    if (c1 + c2 <= TOL * f.norm(Vector.Norm.Infinity))
                         break;
                     c1 = c2;
                 }
             }
-            b = f.assign(Functions.mult(eta));
+            b = f.scale(eta);
         }
         return f;
     }
-    
-    private static final DoubleFunction ZERO2Inf = new DoubleFunction() {
-        public double apply(double d) {
-            if (d == 0) return Double.POSITIVE_INFINITY;
-            return d;
-        }
-    };
-    
+        
     private static final double getMin(Matrix M, int[] index) {
         double min = Double.POSITIVE_INFINITY;
         for (int i = 0; i < M.numRows(); ++i) {
@@ -143,14 +139,13 @@ public final class AMH11 {
         }
         double mu;
         if (shift) {
-            mu = Algebra.DEFAULT.trace(A) / n;
-            A.assign(DoubleFactory2D.rowCompressed.identity(n)
-                    .assign(Functions.mult(-mu)), Functions.plus);
+            mu = Utils.trace(A) / n;
+            A.add(-mu, Matrices.identity(n));
         }
         double mv = 0.0;
         double normA = 0.0;
         if (!forceEstm)
-            normA = Algebra.DEFAULT.norm1(A);
+            normA = A.norm(Matrix.Norm.One);
         double[] alpha;
         if (!forceEstm && normA < 4 * ThetaTaylor.THETA[mMax] * pMax
                 * (pMax + 3) / (mMax * b.size())) {
@@ -181,11 +176,11 @@ public final class AMH11 {
         int t = 1;
         final int n = A.numColumns();
         double c, mv;
-        if (A.equals(A.copy().assign(Functions.abs))) {
-            Matrix e = DoubleFactory2D.dense.make(n, 1, 1.0);
+        if (Utils.isPositive(A)) {
+            Vector e = new DenseVector(n).scale(1.0);
             for (int j = 0; j < m; ++j)
-                e = Algebra.DEFAULT.mult(Algebra.DEFAULT.transpose(A), e);
-            c = Algebra.DEFAULT.normInfinity(e);
+                e = A.transMult(e, new DenseVector(n));
+            c = e.norm(Vector.Norm.Infinity);
             mv = m;
         } else {
             
@@ -196,13 +191,14 @@ public final class AMH11 {
                             
                             if (!transpose) {
                                 for (int i = 0; i < m; ++i) {
-                                    X = Algebra.DEFAULT.mult(A, X);
+                                    X = A.mult(X,new DenseMatrix(A.numRows(),
+                                            X.numColumns()));
                                 }
                             } else {
-                                Matrix AT =
-                                        Algebra.DEFAULT.transpose(A);
-                                for (int i = 0; i < m; ++i) {
-                                    X = Algebra.DEFAULT.mult(AT, X);
+                                 for (int i = 0; i < m; ++i) {
+                                     X = A.transAmult(X,
+                                             new DenseMatrix(A.numColumns(),
+                                                     X.numColumns()));
                                 } 
                             }
                             return X;
