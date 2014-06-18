@@ -26,7 +26,6 @@
     <target name="clean">
         <delete dir="${build}" />
         <delete dir="${build-lib}" />
-        <delete dir="${test}" />
         <delete dir="${build-test}" />
         <delete dir="${test-reports}" />
         <delete dir="${dist}" />
@@ -45,9 +44,6 @@
                srcdir="${src}"
                destdir="${build}"
                classpathref="classpath"
-               fork="true"
-               memoryinitialsize="256m"
-               memorymaximumsize="1024m"
                includeAntRuntime="false">
             <include name="amh11/**" />
         </javac>
