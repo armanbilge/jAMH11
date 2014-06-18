@@ -60,7 +60,7 @@ public final class AMH11 {
         int n = A.numRows();
         double mu = 0.0;
         if (shift) {
-            mu = Utils.trace(M) / n;
+            mu = Utils.trace(A) / n;
             A.add(-1, Matrices.identity(n).scale(mu));
         }
         double tt;
