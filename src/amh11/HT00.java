@@ -39,6 +39,8 @@ import cern.jet.math.Functions;
  */
 public final class HT00 {
 
+    private HT00() {}
+    
     public static interface HT00Random {
         public boolean nextBoolean();
         public double nextDouble();

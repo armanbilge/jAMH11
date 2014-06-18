@@ -33,9 +33,15 @@ import cern.colt.matrix.DoubleMatrix2D;
 import cern.colt.matrix.linalg.Algebra;
 import cern.jet.math.Functions;
 
+/**
+ * @author Arman D. Bilge <armanbilge@gmail.com>
+ *
+ */
 public final class AMH11 {
     
     private static final double TOL = Math.pow(2, -53);
+    
+    private AMH11() {}
     
     public static final DoubleMatrix1D expmv(double t, DoubleMatrix2D A,
             DoubleMatrix1D b) {
