@@ -36,27 +36,27 @@ import org.junit.Test;
 
 public class AMH11Test {
 
-    private final Random random = new Random();
+    private final Random random = new Random(123);
     
     public AMH11Test() {}
 
     @Test
     public void test() {
         
-        int size = 16;
-        Matrix M = Matrices.random(size, size);
-        Vector v = Matrices.random(size);
-        double t = random.nextDouble();
-        
-        Vector amh11 = AMH11.expmv(t, M, v);
-
-        DoubleMatrix jblas = MatrixFunctions.expm(
-                new DoubleMatrix(Matrices.getArray(M)).muli(t))
-                .mmul(new DoubleMatrix(Matrices.getArray(v)));
-        
-        for (int i = 0; i < amh11.size(); ++i) {
-            assertTrue(same(amh11.get(i), jblas.get(i)));
+        for (int i = 0; i < 1000; ++i) {
+            int size = 16;
+            Matrix M = Matrices.random(size, size);
+            Vector v = Matrices.random(size);
+            double t = random.nextDouble();
+            Vector amh11 = AMH11.expmv(t, M, v);
+            DoubleMatrix jblas = MatrixFunctions.expm(
+                    new DoubleMatrix(Matrices.getArray(M)).muli(t)).mmul(
+                    new DoubleMatrix(Matrices.getArray(v)));
+            for (int j = 0; j < amh11.size(); ++j) {
+                assertTrue(same(amh11.get(j), jblas.get(j)));
+            }
         }
+        
     }
     
     private static double EPSILON = 2.220446049250313E-16;
