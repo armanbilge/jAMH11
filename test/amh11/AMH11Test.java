@@ -27,14 +27,13 @@ import static org.junit.Assert.assertTrue;
 import java.util.Arrays;
 import java.util.Random;
 
+import no.uib.cipr.matrix.Matrices;
+import no.uib.cipr.matrix.Matrix;
+import no.uib.cipr.matrix.Vector;
+
 import org.jblas.DoubleMatrix;
 import org.jblas.MatrixFunctions;
 import org.junit.Test;
-
-import cern.colt.matrix.DoubleFactory1D;
-import cern.colt.matrix.DoubleFactory2D;
-import cern.colt.matrix.DoubleMatrix1D;
-import cern.colt.matrix.DoubleMatrix2D;
 
 public class AMH11Test {
 
@@ -46,23 +45,24 @@ public class AMH11Test {
     @Test
     public void test() {
         
-        int size = 32;
-        DoubleMatrix2D M = DoubleFactory2D.dense.random(size, size);
-        DoubleMatrix1D v = DoubleFactory1D.dense.random(size);
+        int size = 16;
+        Matrix M = Matrices.random(size, size);
+        Vector v = Matrices.random(size);
         double t = random.nextDouble();
         
-        DoubleMatrix1D amh11 = AMH11.expmv(t, M, v);
-        DoubleMatrix jblas = MatrixFunctions.expm(new DoubleMatrix(M.toArray())
-                .muli(t)).mmul(new DoubleMatrix(v.toArray()));
+        Vector amh11 = AMH11.expmv(t, M, v);
+
+        DoubleMatrix jblas = MatrixFunctions.expm(new DoubleMatrix(Matrices.getArray(M))
+                .muli(t)).mmul(new DoubleMatrix(Matrices.getArray(v)));
         
-        System.out.println(Arrays.deepToString(M.toArray()));
-        System.out.println(Arrays.toString(v.toArray()));
+        System.out.println(Arrays.deepToString(Matrices.getArray(M)));
+        System.out.println(Arrays.toString(Matrices.getArray(v)));
         System.out.println(t);
         
-        System.out.println(Arrays.toString(amh11.toArray()));
+        System.out.println(Arrays.toString(Matrices.getArray(amh11)));
         System.out.println(Arrays.toString(jblas.toArray()));
         for (int i = 0; i < amh11.size(); ++i) {
-            assertTrue(same(amh11.getQuick(i), jblas.get(i)));
+            assertTrue(same(amh11.get(i), jblas.get(i)));
         }
     }
     
