@@ -39,6 +39,12 @@ public final class Utils {
 
     private Utils() {}
     
+    public static interface MatrixFunction {
+        public Matrix apply(Matrix X, boolean transpose);
+        public int getDimensions();
+        public boolean isReal();
+    }
+    
     public static interface AMH11Random {
         public boolean nextBoolean();
         public double nextDouble();

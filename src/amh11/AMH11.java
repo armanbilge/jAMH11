@@ -29,7 +29,7 @@ import no.uib.cipr.matrix.DenseVector;
 import no.uib.cipr.matrix.Matrices;
 import no.uib.cipr.matrix.Matrix;
 import no.uib.cipr.matrix.Vector;
-import amh11.HT00.MatrixFunction;
+import amh11.Utils.MatrixFunction;
 
 /**
  * @author Arman D. Bilge <armanbilge@gmail.com>

@@ -25,6 +25,7 @@ package amh11;
 import java.util.Arrays;
 import java.util.Comparator;
 
+import amh11.Utils.MatrixFunction;
 import no.uib.cipr.matrix.DenseMatrix;
 import no.uib.cipr.matrix.DenseVector;
 import no.uib.cipr.matrix.Matrices;
@@ -38,12 +39,6 @@ import no.uib.cipr.matrix.Vector;
 public final class HT00 {
 
     private HT00() {}
-    
-    public static interface MatrixFunction {
-        public Matrix apply(Matrix X, boolean transpose);
-        public int getDimensions();
-        public boolean isReal();
-    }
     
     public static final double[] normest1(MatrixFunction f, int t) {
         
