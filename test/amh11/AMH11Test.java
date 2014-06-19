@@ -24,7 +24,6 @@ package amh11;
 
 import static org.junit.Assert.assertTrue;
 
-import java.lang.reflect.Field;
 import java.util.Random;
 
 import no.uib.cipr.matrix.DenseMatrix;
@@ -35,7 +34,6 @@ import no.uib.cipr.matrix.Vector;
 
 import org.jblas.DoubleMatrix;
 import org.jblas.MatrixFunctions;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class AMH11Test {
