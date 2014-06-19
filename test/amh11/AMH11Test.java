@@ -54,7 +54,7 @@ public class AMH11Test {
         for (int i = 0; i < 256; ++i) {
             Matrix M = randomMatrix(size).scale(2).add(-1, O);
             Vector v = randomVector(size);
-            double t = Math.random();
+            double t = random.nextDouble();
             Vector amh11 = AMH11.expmv(t, M, v);
             DoubleMatrix jblas = MatrixFunctions.expm(
                     new DoubleMatrix(Matrices.getArray(M)).muli(t)).mmul(
