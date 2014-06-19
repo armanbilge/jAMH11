@@ -28,6 +28,7 @@ import java.lang.reflect.Field;
 import java.util.Random;
 
 import no.uib.cipr.matrix.DenseMatrix;
+import no.uib.cipr.matrix.DenseVector;
 import no.uib.cipr.matrix.Matrices;
 import no.uib.cipr.matrix.Matrix;
 import no.uib.cipr.matrix.Vector;
@@ -41,13 +42,8 @@ public class AMH11Test {
     
     public AMH11Test() {}
 
-    @BeforeClass
-    public static void setup() throws Exception {
-        Field field = Math.class.getDeclaredField("randomNumberGenerator");
-        field.setAccessible(true);
-        field.set(null, new Random(123));
-    }
-    
+    private static final Random random = new Random(123);
+        
     @Test
     public void test() {
                 
@@ -58,8 +54,8 @@ public class AMH11Test {
         }
         
         for (int i = 0; i < 256; ++i) {
-            Matrix M = Matrices.random(size, size).scale(2).add(-1, O);
-            Vector v = Matrices.random(size);
+            Matrix M = randomMatrix(size).scale(2).add(-1, O);
+            Vector v = randomVector(size);
             double t = Math.random();
             Vector amh11 = AMH11.expmv(t, M, v);
             DoubleMatrix jblas = MatrixFunctions.expm(
@@ -70,6 +66,22 @@ public class AMH11Test {
             }
         }
         
+    }
+    
+    private static final Matrix randomMatrix(int size) {
+        Matrix R = new DenseMatrix(size, size);
+        for (int i = 0; i < size; ++i) {
+            for (int j = 0; j < size; ++j)
+                R.set(i, j, random.nextDouble());
+        }
+        return R;
+    }
+    
+    private static final Vector randomVector(int size) {
+        Vector r = new DenseVector(size);
+        for (int i = 0; i < size; ++i)
+            r.set(i, random.nextDouble());
+        return r;
     }
     
     @SuppressWarnings("unused")
