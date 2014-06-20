@@ -29,7 +29,7 @@ import no.uib.cipr.matrix.DenseVector;
 import no.uib.cipr.matrix.Matrices;
 import no.uib.cipr.matrix.Matrix;
 import no.uib.cipr.matrix.Vector;
-import amh11.Utils.MatrixFunction;
+//import amh11.Utils.MatrixFunction;
 
 /**
  * @author Arman D. Bilge <armanbilge@gmail.com>
@@ -180,44 +180,44 @@ public final class AMH11 {
     }
     
     private static final double[] normAm(final Matrix A, final int m) {
-        int t = 1;
+//        int t = 1;
         final int n = A.numColumns();
         double c, mv;
-        if (Utils.isPositive(A)) {
+//        if (Utils.isPositive(A)) {
             Vector e = Utils.fill(new DenseVector(n), 1.0);
             for (int j = 0; j < m; ++j)
                 e = A.transMult(e, new DenseVector(n));
             c = e.norm(Vector.Norm.Infinity);
             mv = m;
-        } else {
-            
-            MatrixFunction afunPower =
-                    new MatrixFunction() {
-                        public Matrix apply(Matrix X,
-                                boolean transpose) {
-                            
-                            if (!transpose) {
-                                for (int i = 0; i < m; ++i) {
-                                    X = A.mult(X,new DenseMatrix(A.numRows(),
-                                            X.numColumns()));
-                                }
-                            } else {
-                                 for (int i = 0; i < m; ++i) {
-                                     X = A.transAmult(X,
-                                             new DenseMatrix(A.numColumns(),
-                                                     X.numColumns()));
-                                } 
-                            }
-                            return X;
-                        }
-                        public int getDimensions() { return n; }
-                        public boolean isReal() { return true; }
-            };
-            
-            double[] c_it = HT00.normest1(afunPower, t);
-            c = c_it[0];
-            mv = c_it[1] * t * m;
-        }
+//        } else {
+//            
+//            MatrixFunction afunPower =
+//                    new MatrixFunction() {
+//                        public Matrix apply(Matrix X,
+//                                boolean transpose) {
+//                            
+//                            if (!transpose) {
+//                                for (int i = 0; i < m; ++i) {
+//                                    X = A.mult(X,new DenseMatrix(A.numRows(),
+//                                            X.numColumns()));
+//                                }
+//                            } else {
+//                                 for (int i = 0; i < m; ++i) {
+//                                     X = A.transAmult(X,
+//                                             new DenseMatrix(A.numColumns(),
+//                                                     X.numColumns()));
+//                                } 
+//                            }
+//                            return X;
+//                        }
+//                        public int getDimensions() { return n; }
+//                        public boolean isReal() { return true; }
+//            };
+//            
+//            double[] c_it = HT00.normest1(afunPower, t);
+//            c = c_it[0];
+//            mv = c_it[1] * t * m;
+//        }
         return new double[]{c, mv};
     }
     
