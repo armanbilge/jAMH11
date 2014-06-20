@@ -24,7 +24,7 @@ package amh11;
 
 import java.util.Arrays;
 
-import amh11.HT00.DoubleMatrix2DFunction;
+//import amh11.HT00.DoubleMatrix2DFunction;
 import cern.colt.function.DoubleFunction;
 import cern.colt.matrix.DoubleFactory1D;
 import cern.colt.matrix.DoubleFactory2D;
@@ -191,43 +191,43 @@ public final class AMH11 {
     }
     
     private static final double[] normAm(final DoubleMatrix2D A, final int m) {
-        int t = 1;
+//        int t = 1;
         final int n = A.columns();
         double c, mv;
-        if (A.equals(A.copy().assign(Functions.abs))) {
+//        if (A.equals(A.copy().assign(Functions.abs))) {
             DoubleMatrix2D e = DoubleFactory2D.dense.make(n, 1, 1.0);
             for (int j = 0; j < m; ++j)
                 e = Algebra.DEFAULT.mult(Algebra.DEFAULT.transpose(A), e);
             c = Algebra.DEFAULT.normInfinity(e);
             mv = m;
-        } else {
-            
-            DoubleMatrix2DFunction afunPower =
-                    new DoubleMatrix2DFunction() {
-                        public DoubleMatrix2D apply(DoubleMatrix2D X,
-                                boolean transpose) {
-                            
-                            if (!transpose) {
-                                for (int i = 0; i < m; ++i) {
-                                    X = Algebra.DEFAULT.mult(A, X);
-                                }
-                            } else {
-                                DoubleMatrix2D AT =
-                                        Algebra.DEFAULT.transpose(A);
-                                for (int i = 0; i < m; ++i) {
-                                    X = Algebra.DEFAULT.mult(AT, X);
-                                } 
-                            }
-                            return X;
-                        }
-                        public int getDimensions() { return n; }
-                        public boolean isReal() { return true; }
-            };
-            
-            double[] c_it = HT00.normest1(afunPower, t);
-            c = c_it[0];
-            mv = c_it[1] * t * m;
-        }
+//        } else {
+//            
+//            DoubleMatrix2DFunction afunPower =
+//                    new DoubleMatrix2DFunction() {
+//                        public DoubleMatrix2D apply(DoubleMatrix2D X,
+//                                boolean transpose) {
+//                            
+//                            if (!transpose) {
+//                                for (int i = 0; i < m; ++i) {
+//                                    X = Algebra.DEFAULT.mult(A, X);
+//                                }
+//                            } else {
+//                                DoubleMatrix2D AT =
+//                                        Algebra.DEFAULT.transpose(A);
+//                                for (int i = 0; i < m; ++i) {
+//                                    X = Algebra.DEFAULT.mult(AT, X);
+//                                } 
+//                            }
+//                            return X;
+//                        }
+//                        public int getDimensions() { return n; }
+//                        public boolean isReal() { return true; }
+//            };
+//            
+//            double[] c_it = HT00.normest1(afunPower, t);
+//            c = c_it[0];
+//            mv = c_it[1] * t * m;
+//        }
         return new double[]{c, mv};
     }
     
