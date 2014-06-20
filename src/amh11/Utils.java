@@ -64,6 +64,11 @@ public final class Utils {
         Utils.random = random;
     }
     
+    public static final Vector fill(Vector v, double d) {
+        for (int i = 0; i < v.size(); ++i) v.set(i, d);
+        return v;
+    }
+    
     public static final double trace(Matrix M) {
         double trace = 0.0;
         for (int i = 0; i < M.numRows(); ++i)
