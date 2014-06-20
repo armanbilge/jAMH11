@@ -177,7 +177,7 @@ public final class AMH11 {
         final int n = A.numColumns();
         double c, mv;
         if (Utils.isPositive(A)) {
-            Vector e = new DenseVector(n).scale(1.0);
+            Vector e = Utils.fill(new DenseVector(n), 1.0);
             for (int j = 0; j < m; ++j)
                 e = A.transMult(e, new DenseVector(n));
             c = e.norm(Vector.Norm.Infinity);
