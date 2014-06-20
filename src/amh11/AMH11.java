@@ -43,17 +43,25 @@ public final class AMH11 {
     
     private AMH11() {}
     
+    public static final double[] expmv(double t, double[][] A, double[] b) {
+        return expmv(t, DoubleFactory2D.dense.make(A),
+                DoubleFactory1D.dense.make(b), null, true, false, true, false)
+                .toArray();
+    }
+    
     public static final DoubleMatrix1D expmv(double t, DoubleMatrix2D A,
             DoubleMatrix1D b) {
-        return expmv(t, A, b, null, true, false, true);
+        return expmv(t, A, b, null, true, false, true, true);
     }
     
     public static final DoubleMatrix1D expmv(double t, DoubleMatrix2D A,
             DoubleMatrix1D b, DoubleMatrix2D M, boolean shift, boolean bal,
-            boolean fullTerm) {
-                
-        A = A.copy();
-        b = b.copy();
+            boolean fullTerm, boolean copy) {
+           
+        if (copy) {
+            A = A.copy();
+            b = b.copy();
+        }
         
         if (bal) {
             throw new RuntimeException("Not implemented!");
