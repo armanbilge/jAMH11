@@ -41,17 +41,24 @@ public final class AMH11 {
     
     private static final double TOL = Math.pow(2, -53);
     
-    public static final Vector expmv(double t, Matrix A,
-            Vector b) {
-        return expmv(t, A, b, null, true, false, true);
+    public static final double[] expmv(double t, double[][] A, double[] b) {
+        return Matrices.getArray(
+                expmv(t, new DenseMatrix(A), new DenseVector(b), null, true,
+                        false, true, false));
+    }
+    
+    public static final Vector expmv(double t, Matrix A, Vector b) {
+        return expmv(t, A, b, null, true, false, true, true);
     }
     
     public static final Vector expmv(double t, Matrix A,
             Vector b, Matrix M, boolean shift, boolean bal,
-            boolean fullTerm) {
+            boolean fullTerm, boolean copy) {
                 
-        A = A.copy();
-        b = b.copy();
+        if (copy) {
+            A = A.copy();
+            b = b.copy();
+        }
         
         if (bal) {
             throw new RuntimeException("Not implemented!");
