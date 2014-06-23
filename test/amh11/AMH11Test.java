@@ -35,6 +35,10 @@ import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
 import cern.jet.math.tdouble.DoubleFunctions;
 
+/**
+ * @author Arman D. Bilge <armanbilge@gmail.com>
+ *
+ */
 public class AMH11Test {
 
     private static final Random random = new Random(123);
