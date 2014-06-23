@@ -31,10 +31,8 @@ import org.jblas.DoubleMatrix;
 import org.jblas.MatrixFunctions;
 import org.junit.Test;
 
-import cern.colt.matrix.DoubleFactory1D;
-import cern.colt.matrix.DoubleFactory2D;
-import cern.colt.matrix.DoubleMatrix1D;
-import cern.colt.matrix.DoubleMatrix2D;
+import cern.colt.matrix.tdouble.DoubleMatrix1D;
+import cern.colt.matrix.tdouble.DoubleMatrix2D;
 
 public class AMH11Test {
 

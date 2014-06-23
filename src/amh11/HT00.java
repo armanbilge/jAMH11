@@ -26,12 +26,11 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Random;
 
-import cern.colt.matrix.DoubleFactory1D;
-import cern.colt.matrix.DoubleFactory2D;
-import cern.colt.matrix.DoubleMatrix1D;
-import cern.colt.matrix.DoubleMatrix2D;
-import cern.colt.matrix.linalg.Algebra;
-import cern.jet.math.Functions;
+import cern.colt.matrix.tdouble.DoubleFactory1D;
+import cern.colt.matrix.tdouble.DoubleMatrix1D;
+import cern.colt.matrix.tdouble.DoubleMatrix2D;
+import cern.colt.matrix.tdouble.algo.DenseDoubleAlgebra;
+import cern.jet.math.tdouble.DoubleFunctions;
 
 /**
  * @author Arman D. Bilge <armanbilge@gmail.com>
@@ -77,18 +76,18 @@ public final class HT00 {
 //        int rpt_e = 0;
         
         if (t == n || n <= 4) {
-            DoubleMatrix2D X = DoubleFactory2D.dense.identity(n);
+            DoubleMatrix2D X = FlexibleDoubleFactory2D.large.identity(n);
             DoubleMatrix2D Y = f.apply(X, false);
             
             DoubleMatrix1D sums = absColumnSums(Y);
-            double est = Algebra.DEFAULT.normInfinity(sums);
+            double est = DenseDoubleAlgebra.DEFAULT.normInfinity(sums);
             return new double[]{est, 1};
         }
         
         DoubleMatrix2D X = randomSigns(n, t);
         for (int i = 0; i < n; ++i) X.setQuick(i, 0, 1.0);
         unduplicate(X, null);
-        X.assign(Functions.div(n));
+        X.assign(DoubleFunctions.div(n));
         
         int itMax = 5;
         int it = 0;
@@ -97,7 +96,7 @@ public final class HT00 {
         DoubleMatrix1D ind = DoubleFactory1D.dense.make(t);
         DoubleMatrix1D vals = DoubleFactory1D.dense.make(t);
         DoubleMatrix1D Zvals = DoubleFactory1D.dense.make(n);
-        DoubleMatrix2D S = DoubleFactory2D.dense.make(n, t);
+        DoubleMatrix2D S = FlexibleDoubleFactory2D.large.make(n, t);
         DoubleMatrix2D S_old;
         DoubleMatrix1D indHist = null;
         
@@ -112,7 +111,7 @@ public final class HT00 {
             
             vals = absColumnSums(Y);
             final double[] valsArray = vals.toArray();
-            Integer[] m = new Integer[vals.size()];
+            Integer[] m = new Integer[(int) vals.size()];
             for (int i = 0; i < m.length; ++i) m[i] = i;
             Arrays.sort(m, new Comparator<Integer>() {
                 public int compare(Integer i, Integer j) {
@@ -147,8 +146,8 @@ public final class HT00 {
             S = mySign(Y);
             
             if (isReal) {
-                DoubleMatrix2D SS = Algebra.DEFAULT
-                        .mult(Algebra.DEFAULT.transpose(S_old), S);
+                DoubleMatrix2D SS = DenseDoubleAlgebra.DEFAULT
+                        .mult(DenseDoubleAlgebra.DEFAULT.transpose(S_old), S);
                 double np = columnsMax(SS).zSum();
                 if (np == t) break;
                 /* double r = */ unduplicate(S, S_old);
@@ -158,12 +157,12 @@ public final class HT00 {
             DoubleMatrix2D Z = f.apply(S, true);
             ++nmv;
             for (int i = 0; i < n; ++i)
-                Zvals.setQuick(i, Algebra.DEFAULT.normInfinity(Z.viewRow(i)));
+                Zvals.setQuick(i, DenseDoubleAlgebra.DEFAULT.normInfinity(Z.viewRow(i)));
             
-            if (it >= 2 && Algebra.DEFAULT.normInfinity(Zvals)
+            if (it >= 2 && DenseDoubleAlgebra.DEFAULT.normInfinity(Zvals)
                         == Zvals.getQuick(est_j)) break;
             
-            m = new Integer[Zvals.size()];
+            m = new Integer[(int) Zvals.size()];
             final double[] zvalsArray = Zvals.toArray();
             for (int i = 0; i < m.length; ++i) m[i] = i;
             Arrays.sort(m, new Comparator<Integer>() {
@@ -208,7 +207,7 @@ public final class HT00 {
                     temp.setQuick(t+i, ind.getQuick(i));
                 indHist = temp;
             }
-            X = DoubleFactory2D.dense.make(n, t);
+            X = FlexibleDoubleFactory2D.large.make(n, t);
             for (int j = 0; j < imax; ++j)
                 X.setQuick((int) ind.getQuick(j), j, 1);
         }
@@ -222,14 +221,14 @@ public final class HT00 {
     private static final DoubleMatrix1D absColumnSums(DoubleMatrix2D X) {
         DoubleMatrix1D sums = DoubleFactory1D.dense.make(X.columns());
         for (int i = 0; i < X.columns(); ++i) {
-            double sum = Algebra.DEFAULT.norm1(X.viewColumn(i));
+            double sum = DenseDoubleAlgebra.DEFAULT.norm1(X.viewColumn(i));
             sums.setQuick(i, sum);
         }
         return sums;
     }
     
     private static final DoubleMatrix2D randomSigns(int r, int c) {
-        DoubleMatrix2D signs = DoubleFactory2D.dense.make(r, c);
+        DoubleMatrix2D signs = FlexibleDoubleFactory2D.large.make(r, c);
         for (int i = 0; i < r; ++i) {
             for (int j = 0; j < c; ++j) {
                 double sign = random.nextBoolean() ? 1.0 : -1.0;
@@ -251,13 +250,13 @@ public final class HT00 {
         int jStart;
         int lastCol;
         if (S_old == null) {
-            W = DoubleFactory2D.dense.make(n, t);
+            W = FlexibleDoubleFactory2D.large.make(n, t);
             for (int i = 0; i < n; ++i)
                 W.setQuick(i, 0, S.getQuick(i, 0));
             jStart = 1;
             lastCol = 1;
         } else {
-            W = DoubleFactory2D.dense.make(n, 2*t-1);
+            W = FlexibleDoubleFactory2D.large.make(n, 2*t-1);
             for (int i = 0; i < n; ++i) {
                 for (int j = 0; j < t; ++j) {
                     W.setQuick(i, j, S_old.getQuick(i, j));
@@ -269,9 +268,9 @@ public final class HT00 {
         
         for (int j = jStart; j < t; ++j) {
             int rpt = 0;
-            while (Algebra.DEFAULT.norm2(Algebra.DEFAULT.mult(
-                    Algebra.DEFAULT.transpose(S.viewPart(0, j, n, 1)),
-                    W.viewPart(0, 0, n, lastCol)).assign(Functions.abs)) == n) {
+            while (DenseDoubleAlgebra.DEFAULT.norm2(DenseDoubleAlgebra.DEFAULT.mult(
+                    DenseDoubleAlgebra.DEFAULT.transpose(S.viewPart(0, j, n, 1)),
+                    W.viewPart(0, 0, n, lastCol)).assign(DoubleFunctions.abs)) == n) {
                 ++rpt;
                 DoubleMatrix2D signs = randomSigns(n, 1);
                 for (int i = 0; i < n; ++ i)
@@ -293,7 +292,7 @@ public final class HT00 {
         
     private static final DoubleMatrix2D mySign(DoubleMatrix2D X) {
         DoubleMatrix2D signs =
-                DoubleFactory2D.dense.make(X.rows(), X.columns());
+                FlexibleDoubleFactory2D.large.make(X.rows(), X.columns());
         for (int i = 0; i < X.rows(); ++i) {
             for (int j = 0; j < X.columns(); ++j) {
                 double sign = Math.signum(X.getQuick(i, j));
@@ -307,7 +306,7 @@ public final class HT00 {
     private static final DoubleMatrix1D columnsMax(DoubleMatrix2D X) {
         DoubleMatrix1D maxes = DoubleFactory1D.dense.make(X.columns());
         for (int i = 0; i < maxes.size(); ++i)
-            maxes.setQuick(i, Algebra.DEFAULT.normInfinity(X.viewColumn(i)));
+            maxes.setQuick(i, DenseDoubleAlgebra.DEFAULT.normInfinity(X.viewColumn(i)));
         return maxes;
     }
     

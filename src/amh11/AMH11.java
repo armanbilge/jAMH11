@@ -24,14 +24,12 @@ package amh11;
 
 import java.util.Arrays;
 
-//import amh11.HT00.DoubleMatrix2DFunction;
-import cern.colt.function.DoubleFunction;
-import cern.colt.matrix.DoubleFactory1D;
-import cern.colt.matrix.DoubleFactory2D;
-import cern.colt.matrix.DoubleMatrix1D;
-import cern.colt.matrix.DoubleMatrix2D;
-import cern.colt.matrix.linalg.Algebra;
-import cern.jet.math.Functions;
+import cern.colt.function.tdouble.DoubleFunction;
+import cern.colt.matrix.tdouble.DoubleFactory1D;
+import cern.colt.matrix.tdouble.DoubleMatrix1D;
+import cern.colt.matrix.tdouble.DoubleMatrix2D;
+import cern.colt.matrix.tdouble.algo.DenseDoubleAlgebra;
+import cern.jet.math.tdouble.DoubleFunctions;
 
 /**
  * @author Arman D. Bilge <armanbilge@gmail.com>
@@ -44,7 +42,7 @@ public final class AMH11 {
     private AMH11() {}
     
     public static final double[] expmv(double t, double[][] A, double[] b) {
-        return expmv(t, DoubleFactory2D.dense.make(A),
+        return expmv(t, FlexibleDoubleFactory2D.large.make(A),
                 DoubleFactory1D.dense.make(b), null, true, false, true, false)
                 .toArray();
     }
@@ -70,15 +68,15 @@ public final class AMH11 {
         int n = A.rows();
         double mu = 0.0;
         if (shift) {
-            mu = Algebra.DEFAULT.trace(A) / n;
-            A.assign(DoubleFactory2D.rowCompressed.identity(n)
-                    .assign(Functions.mult(mu)), Functions.minus);
+            mu = DenseDoubleAlgebra.DEFAULT.trace(A) / n;
+            A.assign(FlexibleDoubleFactory2D.large.identity(n)
+                    .assign(DoubleFunctions.mult(mu)), DoubleFunctions.minus);
         }
         double tt;
         if (M == null) {
             tt = 1.0;
             M = selectTaylorDegree(
-                    A.copy().assign(Functions.mult(t)),
+                    A.copy().assign(DoubleFunctions.mult(t)),
                     b, 55, 8, shift, bal, false);
         } else {
             tt = t;
@@ -90,11 +88,11 @@ public final class AMH11 {
             m = 0;
         } else {
             mMax = M.rows();
-            DoubleMatrix2D U = DoubleFactory2D.rowCompressed
+            DoubleMatrix2D U = FlexibleDoubleFactory2D.large
                     .diagonal(DoubleFactory1D.dense.ascending(mMax));
-            DoubleMatrix2D C = Algebra.DEFAULT.mult(Algebra.DEFAULT
-                    .transpose(M.assign(Functions.mult(Math.abs(tt)))
-                            .assign(Functions.ceil)), U);
+            DoubleMatrix2D C = DenseDoubleAlgebra.DEFAULT.mult(DenseDoubleAlgebra.DEFAULT
+                    .transpose(M.assign(DoubleFunctions.mult(Math.abs(tt)))
+                            .assign(DoubleFunctions.ceil)), U);
             C.assign(ZERO2Inf);
             double cost;
             int[] min = new int[2];
@@ -109,18 +107,18 @@ public final class AMH11 {
         if (shift) eta = Math.exp(t * mu / s);
         DoubleMatrix1D f = b.copy();
         for (int i = 0; i < s; ++i) {
-            double c1 = Algebra.DEFAULT.normInfinity(b);
+            double c1 = DenseDoubleAlgebra.DEFAULT.normInfinity(b);
             for (int k = 1; k <= m; ++k) {
-                b = Algebra.DEFAULT.mult(A, b).assign(Functions.mult(t/(s*k)));
-                f.assign(b, Functions.plus);
-                double c2 = Algebra.DEFAULT.normInfinity(b);
+                b = DenseDoubleAlgebra.DEFAULT.mult(A, b).assign(DoubleFunctions.mult(t/(s*k)));
+                f.assign(b, DoubleFunctions.plus);
+                double c2 = DenseDoubleAlgebra.DEFAULT.normInfinity(b);
                 if (!fullTerm) {
-                    if (c1 + c2 <= TOL * Algebra.DEFAULT.normInfinity(f))
+                    if (c1 + c2 <= TOL * DenseDoubleAlgebra.DEFAULT.normInfinity(f))
                         break;
                     c1 = c2;
                 }
             }
-            b = f.assign(Functions.mult(eta));
+            b = f.assign(DoubleFunctions.mult(eta));
         }
         return f;
     }
@@ -156,14 +154,14 @@ public final class AMH11 {
         }
         double mu;
         if (shift) {
-            mu = Algebra.DEFAULT.trace(A) / n;
-            A.assign(DoubleFactory2D.rowCompressed.identity(n)
-                    .assign(Functions.mult(-mu)), Functions.plus);
+            mu = DenseDoubleAlgebra.DEFAULT.trace(A) / n;
+            A.assign(FlexibleDoubleFactory2D.large.identity(n)
+                    .assign(DoubleFunctions.mult(-mu)), DoubleFunctions.plus);
         }
         double mv = 0.0;
         double normA = 0.0;
         if (!forceEstm)
-            normA = Algebra.DEFAULT.norm1(A);
+            normA = DenseDoubleAlgebra.DEFAULT.norm1(A);
         double[] alpha;
         if (!forceEstm && normA < 4 * ThetaTaylor.THETA[mMax] * pMax
                 * (pMax + 3) / (mMax * b.size())) {
@@ -182,7 +180,7 @@ public final class AMH11 {
                 alpha[p] = Math.max(eta[p], eta[p+1]);
             }
         }
-        DoubleMatrix2D M = DoubleFactory2D.dense.make(mMax, pMax-1, 0.0);
+        DoubleMatrix2D M = FlexibleDoubleFactory2D.large.make(mMax, pMax-1, 0.0);
         for (int p = 2; p <= pMax; ++p) {
             for (int m = p * (p-1) - 1; m <= mMax; ++m)
                 M.setQuick(m-1, p-2, alpha[p-2] / ThetaTaylor.THETA[m-1]);
@@ -194,11 +192,11 @@ public final class AMH11 {
 //        int t = 1;
         final int n = A.columns();
         double c, mv;
-//        if (A.equals(A.copy().assign(Functions.abs))) {
-            DoubleMatrix2D e = DoubleFactory2D.dense.make(n, 1, 1.0);
+//        if (A.equals(A.copy().assign(DoubleFunctions.abs))) {
+            DoubleMatrix2D e = FlexibleDoubleFactory2D.large.make(n, 1, 1.0);
             for (int j = 0; j < m; ++j)
-                e = Algebra.DEFAULT.mult(Algebra.DEFAULT.transpose(A), e);
-            c = Algebra.DEFAULT.normInfinity(e);
+                e = DenseDoubleAlgebra.DEFAULT.mult(DenseDoubleAlgebra.DEFAULT.transpose(A), e);
+            c = DenseDoubleAlgebra.DEFAULT.normInfinity(e);
             mv = m;
 //        } else {
 //            
@@ -209,13 +207,13 @@ public final class AMH11 {
 //                            
 //                            if (!transpose) {
 //                                for (int i = 0; i < m; ++i) {
-//                                    X = Algebra.DEFAULT.mult(A, X);
+//                                    X = DenseDoubleAlgebra.DEFAULT.mult(A, X);
 //                                }
 //                            } else {
 //                                DoubleMatrix2D AT =
-//                                        Algebra.DEFAULT.transpose(A);
+//                                        DenseDoubleAlgebra.DEFAULT.transpose(A);
 //                                for (int i = 0; i < m; ++i) {
-//                                    X = Algebra.DEFAULT.mult(AT, X);
+//                                    X = DenseDoubleAlgebra.DEFAULT.mult(AT, X);
 //                                } 
 //                            }
 //                            return X;
