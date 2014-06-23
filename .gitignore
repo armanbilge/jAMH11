@@ -3,4 +3,7 @@
 .settings/
 bin/
 build/
+build-lib/
 dist/
+build-test/
+test-reports/
