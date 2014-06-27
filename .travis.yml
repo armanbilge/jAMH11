@@ -18,5 +18,5 @@ deploy:
   on:
     repo: armanbilge/AMH11
     branch: parallel-colt
-    condition: "$(javac -version) = javac 1.6.0_30"
+    java: 1.6.0_30
   skip_cleanup: true
