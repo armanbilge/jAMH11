@@ -14,7 +14,9 @@ deploy:
     secure: hfgolkUogmvk12/sOidz5nS1jw2AIB+3YGRLfKQ2DmJjg/urXPllI3G3x7uXuSlu2GV3VIibj6jbnKVpXRk3JsHfa2n8c++gKSN/Wad6BTQh/IlAJ/is7U4gtvHYXY6VOduAZex82cyuEbfxH+QnModkSTqWdxRRMfilFW7rLw8=
   bucket: build.compevol.org
   local-dir: dist
-  upload-dir: amh11/large
+  upload-dir: amh11/pc
   on:
     repo: armanbilge/AMH11
+    branch: parallel-colt
+    condition: "$(javac -version) = javac 1.6.0_30"
   skip_cleanup: true
