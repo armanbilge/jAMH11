@@ -1,23 +1,28 @@
 /**
- * HT00.java
- * 
+ * Utils.java
+ *
  * AMH11: Java implementation of the matrix exponential method
  *     described by Al-Mohy and Higham (2011)
- * 
- * Copyright (C) 2014 Arman D. Bilge <armanbilge@gmail.com>
- * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Copyright (c) 2014 Arman Bilge <armanbilge@gmail.com>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 package amh11;
@@ -32,24 +37,24 @@ import no.uib.cipr.matrix.Vector;
 import no.uib.cipr.matrix.VectorEntry;
 
 /**
- * @author Arman D. Bilge <armanbilge@gmail.com>
+ * @author Arman Bilge <armanbilge@gmail.com>
  *
  */
 public final class Utils {
 
     private Utils() {}
-    
+
     public static interface MatrixFunction {
         public Matrix apply(Matrix X, boolean transpose);
         public int getDimensions();
         public boolean isReal();
     }
-    
+
     public static interface AMH11Random {
         public boolean nextBoolean();
         public double nextDouble();
     }
-    
+
     private static AMH11Random random = new AMH11Random() {
         private final Random random = new Random();
         public boolean nextBoolean() {
@@ -59,16 +64,16 @@ public final class Utils {
             return random.nextDouble();
         }
     };
-    
+
     public static final void setRandom(AMH11Random random) {
         Utils.random = random;
     }
-    
+
     public static final Vector fill(Vector v, double d) {
         for (int i = 0; i < v.size(); ++i) v.set(i, d);
         return v;
     }
-    
+
     public static final double trace(Matrix M) {
         double trace = 0.0;
         for (int i = 0; i < M.numRows(); ++i)
@@ -81,17 +86,17 @@ public final class Utils {
         for (int i = 0; i < n; ++i) M.set(i, i, i+1);
         return M;
     }
-    
+
     public static final Matrix ceil(Matrix M) {
         for (MatrixEntry me : M) me.set(Math.ceil(me.get()));
         return M;
     }
-    
+
     public static final Matrix abs(Matrix M) {
         for (MatrixEntry me : M) me.set(Math.abs(me.get()));
         return M;
     }
-    
+
     public static final Matrix Zero2Inf(Matrix M) {
         for (int i = 0; i < M.numRows(); ++i) {
             for (int j = 0; j < M.numColumns(); ++j)
@@ -99,20 +104,20 @@ public final class Utils {
         }
         return M;
     }
-    
+
     public static final boolean isPositive(Matrix M) {
         for (MatrixEntry me : M) {
             if (me.get() < 0) return false;
         }
         return true;
     }
-    
+
     public static final double entrySum(Vector v) {
         double sum = 0.0;
         for (VectorEntry ve : v) sum += ve.get();
         return sum;
     }
-    
+
     public static final Vector rowAsVector(Matrix M, int row) {
         Vector v = new DenseVector(M.numColumns());
         for (int i = 0; i < M.numColumns(); ++i) v.set(i, M.get(row, i));
@@ -133,7 +138,7 @@ public final class Utils {
         }
         return sums;
     }
-    
+
     public static final Matrix randomSigns(int r, int c) {
         Matrix signs = new DenseMatrix(r, c);
         for (int i = 0; i < r; ++i) {
@@ -151,7 +156,7 @@ public final class Utils {
             maxes.set(i, Utils.columnAsVector(M, i).norm(Vector.Norm.Infinity));
         return maxes;
     }
-    
+
     public static final int memberCount(int[] a, Vector b) {
         int count = 0;
         for (int i = 0; i < a.length; ++i) {
@@ -160,7 +165,7 @@ public final class Utils {
         }
         return count;
     }
-    
+
     public static final boolean contains(Vector v, double d) {
         for (int i = 0; i < v.size(); ++i) {
             if (v.get(i) == d) return true;

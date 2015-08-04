@@ -1,23 +1,28 @@
 /**
  * HT00.java
- * 
+ *
  * AMH11: Java implementation of the matrix exponential method
  *     described by Al-Mohy and Higham (2011)
- * 
- * Copyright (C) 2014 Arman D. Bilge <armanbilge@gmail.com>
- * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Copyright (c) 2014 Arman Bilge <armanbilge@gmail.com>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 package amh11;
@@ -33,57 +38,57 @@ import no.uib.cipr.matrix.Matrix;
 import no.uib.cipr.matrix.Vector;
 
 /**
- * @author Arman D. Bilge <armanbilge@gmail.com>
+ * @author Arman Bilge <armanbilge@gmail.com>
  *
  */
 public final class HT00 {
 
     private HT00() {}
-    
+
     public static final double[] normest1(MatrixFunction f, int t) {
-        
+
         int n = f.getDimensions();
         boolean isReal = f.isReal();
-        
+
         t = Math.abs(t);
-        
+
 //        int rpt_S = 0;
 //        int rpt_e = 0;
-        
+
         if (t == n || n <= 4) {
             Matrix X = Matrices.identity(n);
             Matrix Y = f.apply(X, false);
-            
+
             Vector sums = Utils.absColumnSums(Y);
             double est = sums.norm(Vector.Norm.Infinity);
             return new double[]{est, 1};
         }
-        
+
         Matrix X = Utils.randomSigns(n, t);
         for (int i = 0; i < n; ++i) X.set(i, 0, 1.0);
         unduplicate(X, null);
         X.scale(1.0 / n);
-        
+
         int itMax = 5;
         int it = 0;
         int nmv = 0;
-        
+
         Vector ind = new DenseVector(t);
         Vector vals = new DenseVector(t);
         Vector Zvals = new DenseVector(n);
         Matrix S = new DenseMatrix(n, t);
         Matrix S_old;
         Vector indHist = null;
-        
+
         double est;
         double estOld = 0.0;
-        
+
         while (true) {
-            
+
             ++it;
             Matrix Y = f.apply(X, false);
             ++nmv;
-            
+
             vals = Utils.absColumnSums(Y);
             final double[] valsArray = Matrices.getArray(vals);
             Integer[] m = new Integer[vals.size()];
@@ -100,26 +105,26 @@ public final class HT00 {
             vals = Matrices.getSubVector(vals, m2);
             Vector vals_ind = Matrices.getSubVector(ind, m2);
             est = vals.get(0);
-            
+
             int est_j = Integer.MIN_VALUE;
             if (est > estOld || (it == 2)) {
                 est_j = (int) vals_ind.get(0);
             }
-            
+
             if (it >= 2 && est <= estOld) {
                 est = estOld;
                 break;
             }
             estOld = est;
-            
+
             if (it > itMax) {
                 it = itMax;
                 break;
             }
-            
+
             S_old = S;
             S = mySign(Y);
-            
+
             if (isReal) {
                 Matrix SS = S_old.transAmult(S,
                         new DenseMatrix(S_old.numColumns(), S.numColumns()));
@@ -128,16 +133,16 @@ public final class HT00 {
                 /* double r = */ unduplicate(S, S_old);
 //                rpt_S += r;
             }
-            
+
             Matrix Z = f.apply(S, true);
             ++nmv;
             for (int i = 0; i < n; ++i)
                 Zvals.set(i,
                         Utils.rowAsVector(Z, i).norm(Vector.Norm.Infinity));
-            
+
             if (it >= 2 && Zvals.norm(Vector.Norm.Infinity) == Zvals.get(est_j))
                 break;
-            
+
             m = new Integer[Zvals.size()];
             final double[] zvalsArray = Matrices.getArray(Zvals);
             for (int i = 0; i < m.length; ++i) m[i] = i;
@@ -148,7 +153,7 @@ public final class HT00 {
             });
             m2 = new int[n];
             for (int i = 0; i < n; ++i) m2[i] = m[n-1-i];
-            
+
             int imax = t;
             int[] m2Tot = Arrays.copyOfRange(m2, 0, t);
             if (it == 1) {
@@ -187,20 +192,20 @@ public final class HT00 {
             for (int j = 0; j < imax; ++j)
                 X.set((int) ind.get(j), j, 1);
         }
-        
+
         int iter = nmv;
         return new double[]{est, iter};
-                
+
     }
-        
+
     private static final double unduplicate(Matrix S,
             Matrix S_old) {
-        
+
         int n = S.numRows();
         int t = S.numColumns();
         double r = 0.0;
         if (t == 1) return r;
-        
+
         Matrix W;
         int jStart;
         int lastCol;
@@ -220,7 +225,7 @@ public final class HT00 {
             jStart = 0;
             lastCol = t;
         }
-        
+
         for (int j = jStart; j < t; ++j) {
             int rpt = 0;
             while (Utils.columnAsVector(Utils.abs(
@@ -232,9 +237,9 @@ public final class HT00 {
                 Matrix signs = Utils.randomSigns(n, 1);
                 for (int i = 0; i < n; ++ i)
                     S.set(i, j, signs.get(i, 0));
-                if (rpt > n / (double) t) break;                
+                if (rpt > n / (double) t) break;
             }
-            
+
             r += Math.signum(rpt);
             if (j < t) {
                 ++lastCol;
@@ -243,10 +248,10 @@ public final class HT00 {
                 }
             }
         }
-        
+
         return r;
     }
-        
+
     private static final Matrix mySign(Matrix M) {
         Matrix signs = new DenseMatrix(M.numRows(), M.numColumns());
         for (int i = 0; i < M.numRows(); ++i) {
@@ -258,5 +263,5 @@ public final class HT00 {
         }
         return signs;
     }
-    
+
 }

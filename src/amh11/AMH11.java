@@ -1,23 +1,28 @@
 /**
  * AMH11.java
- * 
+ *
  * AMH11: Java implementation of the matrix exponential method
  *     described by Al-Mohy and Higham (2011)
- * 
- * Copyright (C) 2014 Arman D. Bilge <armanbilge@gmail.com>
- * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Copyright (c) 2014 Arman Bilge <armanbilge@gmail.com>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 package amh11;
@@ -32,38 +37,38 @@ import no.uib.cipr.matrix.Vector;
 import amh11.Utils.MatrixFunction;
 
 /**
- * @author Arman D. Bilge <armanbilge@gmail.com>
+ * @author Arman Bilge <armanbilge@gmail.com>
  *
  */
 public final class AMH11 {
-    
+
     private AMH11() {}
-    
+
     private static final double TOL = Math.pow(2, -53);
-    
+
     public static final double[] expmv(double t, double[][] A, double[] b) {
         return Matrices.getArray(
                 expmv(t, new DenseMatrix(A), new DenseVector(b), null, true,
                         false, true, false));
     }
-    
+
     public static final Vector expmv(double t, Matrix A, Vector b) {
         return expmv(t, A, b, null, true, false, true, true);
     }
-    
+
     public static final Vector expmv(double t, Matrix A,
             Vector b, Matrix M, boolean shift, boolean bal,
             boolean fullTerm, boolean copy) {
-                
+
         if (copy) {
             A = A.copy();
             b = b.copy();
         }
-        
+
         if (bal) {
             throw new RuntimeException("Not implemented!");
         }
-        
+
         int n = A.numRows();
         double mu = 0.0;
         if (shift) {
@@ -78,7 +83,7 @@ public final class AMH11 {
         } else {
             tt = t;
         }
-        
+
         double s = 1.0;
         int m, mMax;
         if (t == 0) {
@@ -101,7 +106,7 @@ public final class AMH11 {
                 cost = 0;
             s = Math.max(cost/m, 1);
         }
-        
+
         double eta = 1;
         if (shift) eta = Math.exp(t * mu / s);
         Vector f = b.copy();
@@ -121,7 +126,7 @@ public final class AMH11 {
         }
         return f;
     }
-        
+
     private static final double getMin(Matrix M, int[] index) {
         double min = Double.POSITIVE_INFINITY;
         for (int i = 0; i < M.numRows(); ++i) {
@@ -136,7 +141,7 @@ public final class AMH11 {
         }
         return min;
     }
-    
+
     public static final Matrix selectTaylorDegree(Matrix A,
             Vector b, int mMax, int pMax, boolean shift,
             boolean bal, boolean forceEstm) {
@@ -178,7 +183,7 @@ public final class AMH11 {
         }
         return M;
     }
-    
+
     private static final double[] normAm(final Matrix A, final int m) {
         int t = 1;
         final int n = A.numColumns();
@@ -190,12 +195,12 @@ public final class AMH11 {
             c = e.norm(Vector.Norm.Infinity);
             mv = m;
         } else {
-            
+
             MatrixFunction afunPower =
                     new MatrixFunction() {
                         public Matrix apply(Matrix X,
                                 boolean transpose) {
-                            
+
                             if (!transpose) {
                                 for (int i = 0; i < m; ++i) {
                                     X = A.mult(X,new DenseMatrix(A.numRows(),
@@ -206,19 +211,19 @@ public final class AMH11 {
                                      X = A.transAmult(X,
                                              new DenseMatrix(A.numColumns(),
                                                      X.numColumns()));
-                                } 
+                                }
                             }
                             return X;
                         }
                         public int getDimensions() { return n; }
                         public boolean isReal() { return true; }
             };
-            
+
             double[] c_it = HT00.normest1(afunPower, t);
             c = c_it[0];
             mv = c_it[1] * t * m;
         }
         return new double[]{c, mv};
     }
-    
+
 }
